@@ -1,0 +1,55 @@
+<script>
+    
+    window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
+    window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
+    window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+    
+    function print(){
+        console.log("Print Started");
+        var req = window.indexedDB.open("LibraryDB");
+        req.onsuccess = function(){
+            var transaction = req.result.transaction(["BookList"], 1, 1);
+            transaction.oncomplete = function(){
+                console.log("Print Transaction complete");
+                req.result.close();
+            }
+            var objectStore = transaction.objectStore("BookList");
+            var creq = objectStore.openCursor();
+            function iterate(){
+                if (creq.result) {
+                    console.log(creq.result.value);
+                    creq.result["continue"]();
+                }
+            }
+            
+            creq.onsuccess = iterate;
+        };
+        req.onerror = function(){
+            console.log("Print Transacton Error");
+        }
+        req.onblocked = function(){
+            console.log("Print Transaction Blocked");
+        }
+    }
+    
+    
+    function version(){
+        console.log("Version Change started");
+        var req = window.indexedDB.open("LibraryDB");
+        req.onsuccess = function(){
+            var db = req.result;
+            var sreq = db.setVersion(parseInt(Math.random() * 1000));
+            sreq.onsuccess = function(){
+                console.log("Version changed");
+            }
+            sreq.onerror = function(){
+                console.log("Error Version change");
+            }
+            sreq.onblocked = function(e){
+                console.log("Transaction is blocked", e);
+            };
+        };
+    }
+</script>
+<h1><a href = "javascript:version()">Version</a></h1>
+<h1><a href = "javascript:print()">Print</a></h1>
