@@ -167,7 +167,7 @@
             var objectStorePromise = function(dbName, objectStoreName, transactionType){
                 return $.Deferred(function(dfd){
                     var dbPromise = promise.db(dbName);
-                    $.when(promise.objectStore(promise.transaction(dbPromise, objectStoreName, IDBTransaction.READ_WRITE), objectStoreName)).then(function(objectStore){
+                    $.when(promise.objectStore(promise.transaction(dbPromise, objectStoreName, transactionType), objectStoreName)).then(function(objectStore){
                         dfd.resolve(objectStore);
                     }, function(e, db){
                         $.when(promise.objectStore(promise.versionTransaction(dbPromise), objectStoreName, {
@@ -192,7 +192,10 @@
                                             req.onsuccess = function(){
                                                 dfd.resolve(data);
                                             }
-                                        });
+                                            req.onerror = function(e){
+                                                dfd.reject(e, req);
+                                            }
+                                        }, dfd.reject);
                                     }).promise();
                                 }
                             };
