@@ -45,6 +45,7 @@
             function data(){
                 return {
                     "bookName": "bookName-" + parseInt(Math.random() * 100),
+                    "rating": parseInt(Math.random() * 10),
                     "price": parseInt(Math.random() * 1000),
                     "checkedOut": new Date()
                 }
@@ -83,10 +84,10 @@
                     }).select().forEach(showRecords)
                 },
                 
-                "From ObjectStore, Where property in Range and Ordered": function(){
+                "From ObjectStore, Where property in Range and Ordered by Rating": function(){
                     $.linq4idb().from("BookList")["in"]("BookShop-1").where("price", {
                         "range": [200, 600]
-                    }).orderByDesc().select().forEach(showRecords)
+                    }).orderby("rating").select().forEach(showRecords);
                 },
                 
                 "Remove ObjectStore in Database": function(){
