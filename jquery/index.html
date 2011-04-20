@@ -53,15 +53,45 @@
                 $("#console").empty();
             }
             
-            function showRecords(record){
-                $("#console").append($("<div>").html(JSON.stringify(record)));
+            function show(){
+                $("#console").append($("<div>").html("<small>" + (new Date()).toString() + "</small>" + JSON.stringify(arguments)));
                 //console.info.apply(this, arguments);
             }
             
             var examples = {
-                "": function(){
-					$.indexeddb().open("BookList").
-				}
+                "Get Version": function(){
+                    $.indexeddb("BookShop-1").getVersion(show);
+                },
+                
+                "Set Version": function(){
+                    $.indexeddb("BookShop-1").setVersion(show);
+                },
+                
+                "Transaction": function(){
+                    var transaction = $.indexeddb("BookShop-1").transaction(["BookList"], IDBTransaction.READ_WRITE);
+                    transaction.objectStore("BookList").put(data());
+                    transaction.objectStore("OldBookList").put(data());
+                },
+                
+                "Create Object Store": function(){
+                    $.indexeddb("BookShop-1").createObjectStore("BookList").done(show);
+                },
+                
+                "Open Object Store, but dont create if does not exist": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList", false);
+                },
+                
+                "Open Object Store, or create if does not exist": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList", true);
+                },
+                
+                "TODO": function(){
+                    $.indexeddb().open("BookShop-1").objectStore("BookList", false).openCursor();
+                    $.indexeddb().open("BookShop-1").objectStore("BookList", "noCreate").openCursor();
+                    $.indexeddb().open("BookShop-1").objectStore("BookList").openIndex();
+                    $.indexeddb().open("BookShop-1").objectStore("BookList").createIndexIndex();
+                    
+                }
             };
             
             
