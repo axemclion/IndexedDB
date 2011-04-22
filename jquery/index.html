@@ -53,18 +53,19 @@
                 $("#console").empty();
             }
             
-            function show(){
-                $("#console").append($("<div>").html("<small>" + (new Date()).toString() + "</small>" + JSON.stringify(arguments)));
-                //console.info.apply(this, arguments);
-            }
+            var callback = function(){
+                $("#console").append($("<div >").html(JSON.stringify(arguments)));
+                //console.info.apply(this, arguments);	
+            };
+            
             
             var examples = {
                 "Get Version": function(){
-                    $.indexeddb("BookShop-1").getVersion(show);
+                    $.indexeddb("BookShop-1").getVersion(callback);
                 },
                 
                 "Set Version": function(){
-                    $.indexeddb("BookShop-1").setVersion(show);
+                    $.indexeddb("BookShop-1").setVersion(callback);
                 },
                 
                 "Transaction": function(){
@@ -74,15 +75,31 @@
                 },
                 
                 "Create Object Store": function(){
-                    $.indexeddb("BookShop-1").createObjectStore("BookList").done(show);
+                    $.indexeddb("BookShop-1").createObjectStore("BookList").done(callback);
+                },
+                
+                "Delete Object Store": function(){
+                    $.indexeddb("BookShop-1").deleteObjectStore("BookList").done(callback);
                 },
                 
                 "Open Object Store, but dont create if does not exist": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", false);
+                    $.indexeddb("BookShop-1").objectStore("BookList", false).done(callback);
                 },
                 
                 "Open Object Store, or create if does not exist": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", true);
+                    $.indexeddb("BookShop-1").objectStore("BookList", true).done(callback);
+                },
+                
+                "Add Data to Object Store": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList").add(data()).done(callback);
+                },
+                
+                "Modify Data in Object Store": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList").update(data()).done(callback);
+                },
+                
+                "Open a Cursor and list all items in the object store": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList").openCursor().each(callback);
                 },
                 
                 "TODO": function(){

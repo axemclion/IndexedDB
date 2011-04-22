@@ -143,11 +143,70 @@
                             }
                         }, dfd.reject);
                     }).promise();
-                }
-            }
-            
+                },
+                /**
+                 * Creates a cursor Promise
+                 * @param {Object} sourcePromise - Object Store or Index
+                 * @param {Object} range
+                 * @param {Object} direction
+                 */
+                cursor: function(sourcePromise, range, direction){
+                    return $.Deferred(function(dfd){
+                        sourcePromise.then(function(source){
+                            console.debug("Cursor Promise Started", source);
+                            var req = source.openCursor(range, direction);
+                            req.onsuccess = function(){
+                                console.debug("Cursor Promise completed", req);
+                                dfd.resolve(req);
+                            };
+                            req.onerror = function(e){
+                                console.debug("Cursor Promise error", e, req);
+                                dfd.reject(e, req);
+                            };
+                        }, dfd.reject);
+                    }).promise();
+                },
+                /**
+                 * Returns an index promise, or creates one if index does not exist
+                 * @param {Object} indexName
+                 * @param {Object} objectStorePromise
+                 */
+                index: function(indexName, objectStorePromise){
+                    return $.Deferred(function(dfd){
+                        objectStorePromise.then(function(objectStore){
+                            console.debug("Index Promise started", objectStore)
+                            try {
+                                var index = objectStore.index(indexName + "-index");
+                                console.debug("Index Promise compelted", index);
+                                dfd.resolve(index);
+                            } 
+                            catch (e) {
+                                var name = objectStore.transaction.db.name;
+                                objectStore.transaction.abort();
+                                objectStore.transaction.db.close();
+                                console.debug("Index Promise requires version change");
+                                $.when(promise.versionTransaction(promise.db(name))).then(function(transaction){
+                                    console.debug("Index Promise version change transaction started", transaction);
+                                    try {
+                                        var index = transaction.objectStore(objectStore.name).createIndex(indexName + "-index", indexName);
+                                        transaction.oncomplete = function(){
+                                            transaction.db.close();
+                                        }
+                                        console.debug("Index Promise completed", index);
+                                        dfd.resolve(index);
+                                    } 
+                                    catch (e) {
+                                        console.debug("Index Promise Failed", e);
+                                        dfd.reject(e, transaction);
+                                    }
+                                }, dfd.reject);
+                            }
+                        }, dfd.reject);
+                    }).promise();
+                },
+            }//end of promise object
             /**
-             * Returns an objectStore
+             * Returns an objectStore with done, fail, openCursor, etc.
              * @param {Object} objectStoreName
              * @param {Object} canCreate - false: don't create, true|undefined:create with default path, object:create with options
              */
@@ -161,17 +220,83 @@
                         }, dfd.reject);
                     }, dfd.reject);
                 }).promise();
+                
+                var crudOp = function(op, args){
+                    return $.Deferred(function(dfd){
+                        objectStorePromise.done(function(objectStore){
+                            var req = objectStore[op](args);
+                            req.onsuccess = function(event){
+                                console.debug("Performed", op, req.result);
+                                dfd.resolve(req.result);
+                            };
+                            req.onerror = function(e){
+                                dfd.reject(e, req)
+                            }
+                        });
+                    }).promise();
+                };
+                
                 return {
+                    "done": objectStorePromise.done,
+                    "fail": objectStorePromise.fail,
                     "openCursor": function(range, direction){
-                    
+                        return cursor(objectStorePromise, range, direction);
                     },
-                    "index": null,
-                    "createIndex": null
+                    "index": function(indexName){
+                        return {
+                            "openCursor": function(range, direction){
+                                return cursor(promise.index(indexName, objectStorePromise), range, direction);
+                            }
+                        };
+                    },
+                    "add": function(data){
+                        return crudOp("add", data);
+                    },
+                    "delete": function(objectId){
+                        return crudOp("delete", data);
+                    },
+                    "remove": this["delete"],
+                    "get": function(objectId){
+                        return crudOp("get", data);
+                    },
+                    "update": function(data){
+                        return crudOp("put", data);
+                    },
+					"put" : this.update
                 }
+            };
+            
+            /**
+             * Returns a cursor object with each, getAll, etc.
+             * @param {Object} sourcePromise
+             * @param {Object} range
+             * @param {Object} direction
+             */
+            var cursor = function(sourcePromise, range, direction){
+                var cursorPromise = promise.cursor(sourcePromise, range, direction);
+                return {
+                    "each": function(callback){
+                        cursorPromise.then(function(cursorRequest){
+                            function iterator(){
+                                if (cursorRequest.result) {
+                                    callback(cursorRequest.result.value, cursorRequest.result.key);
+                                    cursorRequest.result["continue"]();
+                                }
+                                cursorRequest.onsuccess = iterator;
+                            }
+                            cursorRequest.onsuccess = iterator;
+                            iterator();
+                        }, function(e, req){
+                            console.debug("Could not open cursor", e, req);
+                        });
+                    }
+                };
             };
             
             var dbPromise = promise.db(dbName);
             return {
+                "done": dbPromise.done,
+                "fail": dbPromise.fail,
                 /**
                  * Sets the version of a database
                  * @param {Object} callback
@@ -179,9 +304,9 @@
                  */
                 "setVersion": function(callback, versionNumber){
                     promise.versionTransaction(dbPromise, versionNumber).then(function(e){
-                        callback(e);
+                        callback.onsuccess(e);
                     }, function(){
-                        callback.apply(this, arguments)
+                        callback.onerror.apply(this, arguments);
                     });
                 },
                 
@@ -215,11 +340,11 @@
                  * @param {Object} createOptions
                  */
                 "createObjectStore": function(objectStoreName, canCreate){
-                    return objectStore(promise.versionTransaction(dbPromise), objectStoreName, canCreate);
+                    objectStore(promise.versionTransaction(dbPromise), objectStoreName, canCreate);
                 },
                 
                 "deleteObjectStore": function(objectStoreName){
-                    return objectStore(promise.versionTransaction(dbPromise), objectStoreName, canCreate);
+                    return promise.deleteObjectStore(promise.versionTransaction(dbPromise), objectStoreName);
                 }
             };//end of return values for indexedDB()
         }
