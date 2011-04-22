@@ -102,6 +102,25 @@
                     $.indexeddb("BookShop-1").objectStore("BookList").openCursor().each(callback);
                 },
                 
+                "Open a cursor and delete items with price that is an odd number": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList").openCursor().deleteEach(function(value, key){
+                        if (value.price % 2) {
+                            return true;
+                        }
+                    });
+                },
+                
+                "Open a cursor and update items with price that is an odd number": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList").openCursor().updateEach(function(value){
+                        if (value.price % 2) {
+                            value["modified-" + Math.random()] = true;
+                            value.price = parseInt(Math.random() * 100);
+                            callback(value);
+                            return value;
+                        }
+                    });
+                },
+                
                 "TODO": function(){
                     $.indexeddb().open("BookShop-1").objectStore("BookList", false).openCursor();
                     $.indexeddb().open("BookShop-1").objectStore("BookList", "noCreate").openCursor();

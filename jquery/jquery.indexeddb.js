@@ -262,7 +262,7 @@
                     "update": function(data){
                         return crudOp("put", data);
                     },
-					"put" : this.update
+                    "put": this.update
                 }
             };
             
@@ -275,11 +275,22 @@
             var cursor = function(sourcePromise, range, direction){
                 var cursorPromise = promise.cursor(sourcePromise, range, direction);
                 return {
-                    "each": function(callback){
+                    /**
+                     * Updates each element when iterating on the cursor
+                     * @param {Object} callback
+                     * @param {Object} canDelete
+                     */
+                    "updateEach": function(callback, canDelete){
                         cursorPromise.then(function(cursorRequest){
                             function iterator(){
                                 if (cursorRequest.result) {
-                                    callback(cursorRequest.result.value, cursorRequest.result.key);
+                                    var result = callback(cursorRequest.result.value, cursorRequest.result.key);
+                                    if (canDelete) {
+                                        cursorRequest.result["delete"]();
+                                    }
+                                    if (result) {
+                                        cursorRequest.result.update(result);
+                                    }
                                     cursorRequest.result["continue"]();
                                 }
                                 cursorRequest.onsuccess = iterator;
@@ -289,9 +300,28 @@
                         }, function(e, req){
                             console.debug("Could not open cursor", e, req);
                         });
+                    },
+                    /**
+                     * Iterates over each element
+                     * @param {Object} callback
+                     */
+                    "each": function(callback){
+                        this.updateEach(function(val, key){
+                            callback(val, key);
+                            return false;
+                        });
+                    },
+					/**
+					 * Deletes each element if callback returns true
+					 * @param {Object} callback
+					 */                    
+                    "deleteEach": function(callback){
+                        this.updateEach(function(val, key){
+                            return callback(val, key);
+                        });
                     }
                 };
-            };
+            }; //end of cursor
             
             var dbPromise = promise.db(dbName);
             return {
