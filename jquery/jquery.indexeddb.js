@@ -352,13 +352,8 @@
                  * @param {Object} callback
                  * @param {Object} versionNumber - optional. If nothing is specified, version is incremented by 1.
                  */
-                "setVersion": function(callback, versionNumber){
-                    promise.versionTransaction(dbPromise, versionNumber).then(function(e){
-                        console.debug("Version changed", e);
-                        callback(e);
-                    }, function(){
-                        callback.apply(this, arguments);
-                    });
+                "setVersion": function(versionNumber){
+                    return promise.versionTransaction(dbPromise, versionNumber);
                 },
                 
                 /**
