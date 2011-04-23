@@ -1,0 +1,3 @@
+Wrappers on IndexedDB APIs
+
+This project tries explores various ways to make the IndexedDB API easier to use. The aim of the project is to work on APIs abstract out boiler plate code, allowing users to deal with only the relevant parts of IndexedDB.  

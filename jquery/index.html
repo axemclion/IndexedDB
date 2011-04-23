@@ -29,6 +29,9 @@
         </style>
     </head>
     <body>
+        <div>
+            To see more documentation, visit <a href = "/trialtool/index.html#example=/IndexedDB/jquery/trialtool.html">/trialtool/index.html#example=/IndexedDB/jquery/trialtool.html</a>
+        </div>
         <ol id = "examples">
         </ol>
         <div id = "code">
@@ -60,42 +63,48 @@
             
             
             var examples = {
-                "Get Version": function(){
-                    $.indexeddb("BookShop-1").getVersion(callback);
-                },
-                
                 "Set Version": function(){
                     $.indexeddb("BookShop-1").setVersion(callback);
                 },
                 
                 "Transaction": function(){
-                    var transaction = $.indexeddb("BookShop-1").transaction(["BookList"], IDBTransaction.READ_WRITE);
-                    transaction.objectStore("BookList").put(data());
-                    transaction.objectStore("OldBookList").put(data());
+                    var transaction = $.indexeddb("BookShop-1").transaction([], IDBTransaction.READ_WRITE);
+                    transaction.objectStore("BookList").add(data());
+                    transaction.objectStore("OldBookList").add(data());
                 },
                 
                 "Create Object Store": function(){
-                    $.indexeddb("BookShop-1").createObjectStore("BookList").done(callback);
+                    $.indexeddb("BookShop-1").createObjectStore("BookList").promise().done(callback);
                 },
                 
                 "Delete Object Store": function(){
-                    $.indexeddb("BookShop-1").deleteObjectStore("BookList").done(callback);
+                    $.indexeddb("BookShop-1").deleteObjectStore("BookList").promise().done(callback);
                 },
                 
                 "Open Object Store, but dont create if does not exist": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", false).done(callback);
+                    $.indexeddb("BookShop-1").objectStore("BookList", false).promise().done(callback);
                 },
                 
                 "Open Object Store, or create if does not exist": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", true).done(callback);
+                    $.indexeddb("BookShop-1").objectStore("BookList", true).promise().done(callback);
                 },
                 
                 "Add Data to Object Store": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").add(data()).done(callback);
+                    $.indexeddb("BookShop-1").objectStore("BookList").add(data()).promise().done(function(e){
+                        objId = e;
+                        callback(e)
+                    });
+                },
+                
+                "Get data": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList").get(objId).promise().done(callback);
                 },
                 
                 "Modify Data in Object Store": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").update(data()).done(callback);
+                    var value = data();
+                    value["modified-" + Math.random()] = true;
+                    value.id = objId;
+                    $.indexeddb("BookShop-1").objectStore("BookList").update(value).promise().done(callback);
                 },
                 
                 "Open a Cursor and list all items in the object store": function(){
@@ -119,6 +128,12 @@
                             return value;
                         }
                     });
+                },
+                "Open an Index and iterate over its objects": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList").index("price").openCursor().each(callback);
+                },
+                "Open a key cursor on an Index and iterate over its objects": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList").index("price").openKeyCursor([200, 500]).each(callback);
                 },
                 
                 "TODO": function(){

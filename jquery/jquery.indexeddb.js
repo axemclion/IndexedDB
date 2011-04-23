@@ -150,11 +150,14 @@
                  * @param {Object} range
                  * @param {Object} direction
                  */
-                cursor: function(sourcePromise, range, direction){
+                cursor: function(sourcePromise, range, direction, cursorType){
+                    if (!cursorType) {
+                        cursorType = "openCursor";
+                    }
                     return $.Deferred(function(dfd){
                         sourcePromise.then(function(source){
                             console.debug("Cursor Promise Started", source);
-                            var req = source.openCursor(range, direction);
+                            var req = source[cursorType](range, direction);
                             req.onsuccess = function(){
                                 console.debug("Cursor Promise completed", req);
                                 dfd.resolve(req);
@@ -252,6 +255,9 @@
                         return {
                             "openCursor": function(range, direction){
                                 return cursor(promise.index(indexName, objectStorePromise), range, direction);
+                            },
+                            "openKeyCursor": function(range, direction){
+                                return cursor(promise.index(indexName, objectStorePromise), range, direction, "openKeyCursor");
                             }
                         };
                     },
@@ -282,20 +288,23 @@
              * @param {Object} range
              * @param {Object} direction
              */
-            var cursor = function(sourcePromise, range, direction){
-                var cursorPromise = promise.cursor(sourcePromise, range, direction);
-                
+            var cursor = function(sourcePromise, range, direction, type){
+                if (range) {
+                    var bounds = new IDBKeyRange.bound(range[0], range[1], range[2] || true, range[3] || true);
+                }
+                var cursorPromise = promise.cursor(sourcePromise, bounds, direction, type);
                 function loop(callback, canDelete){
                     cursorPromise.then(function(cursorRequest){
                         function iterator(){
                             if (cursorRequest.result) {
                                 var result = callback(cursorRequest.result.value, cursorRequest.result.key);
-                                if (canDelete) {
+                                if (canDelete && result) {
                                     cursorRequest.result["delete"]();
                                 }
-                                if (result) {
-                                    cursorRequest.result.update(result);
-                                }
+                                else 
+                                    if (result) {
+                                        cursorRequest.result.update(result);
+                                    }
                                 cursorRequest.result["continue"]();
                             }
                             cursorRequest.onsuccess = iterator;
@@ -331,7 +340,7 @@
                     "deleteEach": function(callback){
                         loop(function(val, key){
                             return callback(val, key);
-                        });
+                        }, true);
                     }
                 };
             }; //end of cursor
