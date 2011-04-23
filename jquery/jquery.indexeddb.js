@@ -77,12 +77,12 @@
                                     transaction.db.close();
                                 }
                                 console.debug("Transaction Promise completed", transaction);
-                                dfd.resolve(transaction);
                             } 
                             catch (e) {
                                 console.debug("Error in transaction", e);
                                 dfd.reject(e, db);
                             }
+                            dfd.resolve(transaction);
                         }, dfd.reject);
                     }).promise();
                     ;
@@ -100,10 +100,9 @@
                             try {
                                 var objectStore = transaction.objectStore(objectStoreName);
                                 console.debug("ObjectStore Promise completed", objectStore);
-                                dfd.resolve(objectStore);
                             } 
                             catch (e) {
-                                console.debug("Object store not found", objectStoreName);
+                                console.debug("Object store not found", objectStoreName, e);
                                 try {
                                     if (createOptions) {
                                         console.debug("Create options specified, so trying to create the database")
@@ -113,7 +112,7 @@
                                         }, true);
                                     }
                                     else {
-                                        console.debug("Object store not found and could not create it either", e);
+                                        console.debug("Could not create object", e);
                                         dfd.reject(e, transaction.db);
                                     }
                                 } 
@@ -122,6 +121,7 @@
                                     dfd.reject(e, transaction.db);
                                 }
                             }
+                            dfd.resolve(objectStore);
                         }, dfd.reject);
                     }).promise();
                 },
@@ -206,7 +206,7 @@
                 },
             }//end of promise object
             /**
-             * Returns an objectStore with done, fail, openCursor, etc.
+             * Returns an objectStore promise with openCursor, etc.
              * @param {Object} objectStoreName
              * @param {Object} canCreate - false: don't create, true|undefined:create with default path, object:create with options
              */
@@ -223,22 +223,28 @@
                 
                 var crudOp = function(op, args){
                     return $.Deferred(function(dfd){
-                        objectStorePromise.done(function(objectStore){
-                            var req = objectStore[op](args);
-                            req.onsuccess = function(event){
-                                console.debug("Performed", op, req.result);
-                                dfd.resolve(req.result);
-                            };
-                            req.onerror = function(e){
-                                dfd.reject(e, req)
+                        objectStorePromise.then(function(objectStore){
+                            try {
+                                var req = objectStore[op](args);
+                                req.onsuccess = function(event){
+                                    console.debug("Performed", op, req.result);
+                                    dfd.resolve(req.result);
+                                };
+                                req.onerror = function(e){
+                                    console.debug("Error performing", op, e, req);
+                                    dfd.reject(e, req)
+                                }
+                            } 
+                            catch (e) {
+                                console.debug("Exception in ", op, e, req);
+                                dfd.reject(e, req);
                             }
-                        });
+                        }, dfd.reject);
                     }).promise();
                 };
                 
                 return {
-                    "done": objectStorePromise.done,
-                    "fail": objectStorePromise.fail,
+                    "promise": objectStorePromise,
                     "openCursor": function(range, direction){
                         return cursor(objectStorePromise, range, direction);
                     },
@@ -252,17 +258,21 @@
                     "add": function(data){
                         return crudOp("add", data);
                     },
-                    "delete": function(objectId){
+                    "delete": function(data){
                         return crudOp("delete", data);
                     },
-                    "remove": this["delete"],
-                    "get": function(objectId){
+                    "remove": function(data){
+                        return crudOp("delete", data);
+                    },
+                    "get": function(data){
                         return crudOp("get", data);
                     },
                     "update": function(data){
                         return crudOp("put", data);
                     },
-                    "put": this.update
+                    "put": function(data){
+                        return crudOp("put", data);
+                    }
                 }
             };
             
@@ -274,59 +284,60 @@
              */
             var cursor = function(sourcePromise, range, direction){
                 var cursorPromise = promise.cursor(sourcePromise, range, direction);
+                
+                function loop(callback, canDelete){
+                    cursorPromise.then(function(cursorRequest){
+                        function iterator(){
+                            if (cursorRequest.result) {
+                                var result = callback(cursorRequest.result.value, cursorRequest.result.key);
+                                if (canDelete) {
+                                    cursorRequest.result["delete"]();
+                                }
+                                if (result) {
+                                    cursorRequest.result.update(result);
+                                }
+                                cursorRequest.result["continue"]();
+                            }
+                            cursorRequest.onsuccess = iterator;
+                        }
+                        cursorRequest.onsuccess = iterator;
+                        iterator();
+                    }, function(e, req){
+                        console.debug("Could not open cursor", e, req);
+                    });
+                };
+                
                 return {
                     /**
                      * Updates each element when iterating on the cursor
                      * @param {Object} callback
                      * @param {Object} canDelete
                      */
-                    "updateEach": function(callback, canDelete){
-                        cursorPromise.then(function(cursorRequest){
-                            function iterator(){
-                                if (cursorRequest.result) {
-                                    var result = callback(cursorRequest.result.value, cursorRequest.result.key);
-                                    if (canDelete) {
-                                        cursorRequest.result["delete"]();
-                                    }
-                                    if (result) {
-                                        cursorRequest.result.update(result);
-                                    }
-                                    cursorRequest.result["continue"]();
-                                }
-                                cursorRequest.onsuccess = iterator;
-                            }
-                            cursorRequest.onsuccess = iterator;
-                            iterator();
-                        }, function(e, req){
-                            console.debug("Could not open cursor", e, req);
-                        });
-                    },
+                    updateEach: loop,
                     /**
                      * Iterates over each element
                      * @param {Object} callback
                      */
                     "each": function(callback){
-                        this.updateEach(function(val, key){
+                        loop(function(val, key){
                             callback(val, key);
                             return false;
                         });
                     },
-					/**
-					 * Deletes each element if callback returns true
-					 * @param {Object} callback
-					 */                    
+                    /**
+                     * Deletes each element if callback returns true
+                     * @param {Object} callback
+                     */
                     "deleteEach": function(callback){
-                        this.updateEach(function(val, key){
+                        loop(function(val, key){
                             return callback(val, key);
                         });
                     }
                 };
             }; //end of cursor
-            
             var dbPromise = promise.db(dbName);
             return {
-                "done": dbPromise.done,
-                "fail": dbPromise.fail,
+                "promise": dbPromise,
                 /**
                  * Sets the version of a database
                  * @param {Object} callback
@@ -334,9 +345,10 @@
                  */
                 "setVersion": function(callback, versionNumber){
                     promise.versionTransaction(dbPromise, versionNumber).then(function(e){
-                        callback.onsuccess(e);
+                        console.debug("Version changed", e);
+                        callback(e);
                     }, function(){
-                        callback.onerror.apply(this, arguments);
+                        callback.apply(this, arguments);
                     });
                 },
                 
@@ -356,7 +368,8 @@
                     return {
                         "objectStore": function(objectStoreName, canCreate){
                             return objectStore(transactionPromise, objectStoreName, canCreate);
-                        }
+                        },
+                        "promise": transactionPromise,
                     };
                     
                 },
