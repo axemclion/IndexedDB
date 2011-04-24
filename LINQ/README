@@ -1,0 +1,89 @@
+LINQ API on IndexedDB : http://nparashuram.com/IndexedDB/LINQ/index.html
+
+The objective of the plugin is to make the IndexedDB API easier to use. 
+Treading on the same direction, I started exploring the use of LINQ like syntax that can be built on IndexedDB.
+
+Background
+
+IndexedDB API is a part of the HTML5 standards that allows web pages to persist data in the browser. Basically, it is a database embedded into the browser. The standard is currently supported by Internet Explorer (prototype), Firefox 4 and Google Chrome 12 (Canary build) . More details about IndexedDB API here.
+
+Summary
+
+The current API specification is still in editor’s draft (and in my humble opinion, very verbose).
+
+Would it not be great if I could use the familiar LINQ like syntax data operations using IndexedDB on the browser also ?
+
+… from("BookList").in("LibraryDB").select().forEach(showRecords)…
+
+Read without the parenthesis and it would sound more like LINQ.. The parenthesis are a due to the Javascript language.
+
+Problem
+
+    The IndexedDB APIs are very verbose and even simple get/put operations require huge amounts of boiler plate code. 
+    The asynchronous function call model of getting a request is something that users have not really used. When dealing with data, people love LINQ.
+
+API Today
+
+To perform a database operation, a developer would have to write boilerplate code,  as large as
+
+ 
+    var request = window.indexedDB.open("BookShop-1");
+    request.onsuccess = function(event){
+        var db = request.result;
+        var transaction = db.transaction(["BookList"], IDBTransaction.READ_WRITE);
+        var objectStore = transaction.objectStore("BookList");
+        var request = DAO.objectStore.openCursor();
+        request.onsuccess = function(event){
+            var cursor = request.result;
+            if (cursor) {
+              write(cursor.key + "" + cursor.value);
+              cursor["continue"]();                
+            }
+        };
+    };
+
+
+The above code would increase if objects have to be created with version transaction, and error conditions are to be added.
+
+Solution
+
+Would it not be simpler if a user would just need to write something like
+
+From ObjectStore in Database, Select and ForEach, print.
+
+The syntax for this could be as simple as
+
+linq4idb().from("BookList").in("LibraryDB")select().forEach(showRecords);
+
+for iterating through the records or the following for filtering records.
+
+linq4idb().from("BookList").in("LibraryDB").where(“rating”,{“equals”: “good”}).select().forEach(showRecords);
+
+Note that since this is Javascript, we cannot do away with the parenthesis. Read the above like without the parenthesis and it would sound like LINQ.
+
+Code & Demo
+
+The demo is available at http://nparashuram.com/IndexedDB/LINQ/index.html. It requires JQuery 1.5 and is built on the concept of "promises". The demo illustrates the various LINQ
+
+operators that are currently supported.
+
+The code is available here on Github.
+
+Advantages
+
+    This is better than passing the entire LINQ query as a string with auto-completion, syntax checking, etc.
+    Better than SQL Statement string in Javascript 
+    This library is not built at on the native implementation but build on IndexedDB API that can run across all browsers.
+    Server Side JS could use similar syntax with LINQ on NOSQL databases whose APIs are similar to IndexedDB.
+
+Design
+
+The library tries to use ranged cursors for the where() operator and indexes for the orderby(propertyName) operator.
+
+A limitation of the IndexedDB API is that it does not allow for filtering and sorting over multiple properties. In cases where sorting and filter are user over more than one property, the sorting is does first using Indexes and then the results are filtered with the assumption that native, index-based sorting is faster than filtering using cursors and then sorting in Javascript.
+
+Next Steps
+
+    LINQ is a query language and there did not seem any obvious way to "put" data. Still exploring the ways to have a good syntax to "put" data.
+    LINQ expands to "Language" Integrated Query. The syntax above has parenthesis which do not make it look integrated with the language. Still looking at way to make it look more like LINQ. 
+    Find ways to optimize the combinations of the where() and the orderby() clause so that all operations are performed natively.
