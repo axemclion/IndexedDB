@@ -16,14 +16,14 @@
                  */
                 db: function(dbName){
                     return $.Deferred(function(dfd){
-                        console.debug("Starting DB Promise", arguments);
+                        //console.debug("Starting DB Promise", arguments);
                         var req = window.indexedDB.open(dbName);
                         req.onsuccess = function(){
-                            console.debug("DB Promise resolved", req.result);
+                            //console.debug("DB Promise resolved", req.result);
                             dfd.resolve(req.result);
                         }
                         req.onerror = function(e){
-                            console.debug("DB Promise rejected", req.result);
+                            //console.debug("DB Promise rejected", req.result);
                             dfd.reject(e, req);
                         }
                     }).promise();
@@ -37,22 +37,22 @@
                 versionTransaction: function(dbPromise, version){
                     return $.Deferred(function(dfd){
                         dbPromise.then(function(db){
-                            console.debug("Version Change Transaction Promise started", db, version);
+                            //console.debug("Version Change Transaction Promise started", db, version);
                             var req = db.setVersion(version || (isNaN(parseInt(db.version, 10)) ? 0 : parseInt(db.version, 10) + 1));
                             req.onsuccess = function(){
-                                console.debug("Version Change Transaction Promise completed", req.result);
+                                //console.debug("Version Change Transaction Promise completed", req.result);
                                 req.result.oncomplete = function(){
-                                    console.debug("Transaction Complete, so closing database");
+                                    //console.debug("Transaction Complete, so closing database");
                                     req.result.db.close();
                                 }
                                 dfd.resolve(req.result);
                             }
                             req.onblocked = function(e){
-                                console.debug("Version Change Transaction Promise blocked", e);
+                                //console.debug("Version Change Transaction Promise blocked", e);
                                 dfd.reject(e, req);
                             }
                             req.onerror = function(e){
-                                console.debug("Version Change Transaction Promise error", e);
+                                //console.debug("Version Change Transaction Promise error", e);
                                 dfd.reject(e, req);
                             }
                         }, dfd.reject);
@@ -69,17 +69,17 @@
                     return $.Deferred(function(dfd){
                         (typeof objectStoreNames === "string") && (objectStoreNames = [objectStoreNames]);
                         dbPromise.then(function(db){
-                            console.debug("Transaction Promise started", db, objectStoreNames, transactionType);
+                            //console.debug("Transaction Promise started", db, objectStoreNames, transactionType);
                             try {
                                 var transaction = db.transaction(objectStoreNames || [], transactionType || IDBTransaction.READ);
                                 transaction.oncomplete = function(){
-                                    console.debug("Transaction completed, so closing database");
+                                    //console.debug("Transaction completed, so closing database");
                                     transaction.db.close();
                                 }
-                                console.debug("Transaction Promise completed", transaction);
+                                //console.debug("Transaction Promise completed", transaction);
                             } 
                             catch (e) {
-                                console.debug("Error in transaction", e);
+                                //console.debug("Error in transaction", e);
                                 dfd.reject(e, db);
                             }
                             dfd.resolve(transaction);
@@ -96,28 +96,28 @@
                 objectStore: function(transactionPromise, objectStoreName, createOptions){
                     return $.Deferred(function(dfd){
                         transactionPromise.then(function(transaction){
-                            console.debug("ObjectStore Promise started", transactionPromise, objectStoreName, createOptions);
+                            //console.debug("ObjectStore Promise started", transactionPromise, objectStoreName, createOptions);
                             try {
                                 var objectStore = transaction.objectStore(objectStoreName);
-                                console.debug("ObjectStore Promise completed", objectStore);
+                                //console.debug("ObjectStore Promise completed", objectStore);
                             } 
                             catch (e) {
-                                console.debug("Object store not found", objectStoreName, e);
+                                //console.debug("Object store not found", objectStoreName, e);
                                 try {
                                     if (createOptions) {
-                                        console.debug("Create options specified, so trying to create the database")
+                                        //console.debug("Create options specified, so trying to create the database")
                                         transaction.db.createObjectStore(objectStoreName, {
                                             "autoIncrement": createOptions.autoIncrement || true,
                                             "keyPath": createOptions.keyPath || "id"
                                         }, true);
                                     }
                                     else {
-                                        console.debug("Could not create object", e);
+                                        //console.debug("Could not create object", e);
                                         dfd.reject(e, transaction.db);
                                     }
                                 } 
                                 catch (e) {
-                                    console.debug("Error in Object Store Promise", e);
+                                    //console.debug("Error in Object Store Promise", e);
                                     dfd.reject(e, transaction.db);
                                 }
                             }
@@ -134,11 +134,11 @@
                         transactionPromise.then(function(transaction){
                             try {
                                 transaction.db.deleteObjectStore(objectStoreName);
-                                console.debug("Deleted object store", objectStoreName);
+                                //console.debug("Deleted object store", objectStoreName);
                                 dfd.resolve(transaction.db);
                             } 
                             catch (e) {
-                                console.debug("Could not delete ", objectStoreName)
+                                //console.debug("Could not delete ", objectStoreName)
                                 dfd.reject(e, transaction.db);
                             }
                         }, dfd.reject);
@@ -156,14 +156,14 @@
                     }
                     return $.Deferred(function(dfd){
                         sourcePromise.then(function(source){
-                            console.debug("Cursor Promise Started", source);
+                            //console.debug("Cursor Promise Started", source);
                             var req = source[cursorType](range, direction);
                             req.onsuccess = function(){
-                                console.debug("Cursor Promise completed", req);
+                                //console.debug("Cursor Promise completed", req);
                                 dfd.resolve(req);
                             };
                             req.onerror = function(e){
-                                console.debug("Cursor Promise error", e, req);
+                                //console.debug("Cursor Promise error", e, req);
                                 dfd.reject(e, req);
                             };
                         }, dfd.reject);
@@ -177,29 +177,29 @@
                 index: function(indexName, objectStorePromise){
                     return $.Deferred(function(dfd){
                         objectStorePromise.then(function(objectStore){
-                            console.debug("Index Promise started", objectStore)
+                            //console.debug("Index Promise started", objectStore)
                             try {
                                 var index = objectStore.index(indexName + "-index");
-                                console.debug("Index Promise compelted", index);
+                                //console.debug("Index Promise compelted", index);
                                 dfd.resolve(index);
                             } 
                             catch (e) {
                                 var name = objectStore.transaction.db.name;
                                 objectStore.transaction.abort();
                                 objectStore.transaction.db.close();
-                                console.debug("Index Promise requires version change");
+                                //console.debug("Index Promise requires version change");
                                 $.when(promise.versionTransaction(promise.db(name))).then(function(transaction){
-                                    console.debug("Index Promise version change transaction started", transaction);
+                                    //console.debug("Index Promise version change transaction started", transaction);
                                     try {
                                         var index = transaction.objectStore(objectStore.name).createIndex(indexName + "-index", indexName);
                                         transaction.oncomplete = function(){
                                             transaction.db.close();
                                         }
-                                        console.debug("Index Promise completed", index);
+                                        //console.debug("Index Promise completed", index);
                                         dfd.resolve(index);
                                     } 
                                     catch (e) {
-                                        console.debug("Index Promise Failed", e);
+                                        //console.debug("Index Promise Failed", e);
                                         dfd.reject(e, transaction);
                                     }
                                 }, dfd.reject);
@@ -230,16 +230,16 @@
                             try {
                                 var req = objectStore[op](args);
                                 req.onsuccess = function(event){
-                                    console.debug("Performed", op, req.result);
+                                    //console.debug("Performed", op, req.result);
                                     dfd.resolve(req.result);
                                 };
                                 req.onerror = function(e){
-                                    console.debug("Error performing", op, e, req);
+                                    //console.debug("Error performing", op, e, req);
                                     dfd.reject(e, req)
                                 }
                             } 
                             catch (e) {
-                                console.debug("Exception in ", op, e, req);
+                                //console.debug("Exception in ", op, e, req);
                                 dfd.reject(e, req);
                             }
                         }, dfd.reject);
@@ -312,7 +312,7 @@
                         cursorRequest.onsuccess = iterator;
                         iterator();
                     }, function(e, req){
-                        console.debug("Could not open cursor", e, req);
+                        //console.debug("Could not open cursor", e, req);
                     });
                 };
                 
