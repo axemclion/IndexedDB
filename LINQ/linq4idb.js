@@ -1,15 +1,15 @@
 (function($){
     $.extend({
         linq4idb: function(config){
-            window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
-            window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
-            window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+            var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
+            var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
+            var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
             
             var promise = {
                 db: function(dbName){
                     return $.Deferred(function(dfd){
                         //console.debug("Starting DB Promise", arguments);
-                        var req = window.indexedDB.open(dbName);
+                        var req = indexedDB.open(dbName);
                         req.onsuccess = function(){
                             //console.debug("DB Promise resolved", req.result);
                             dfd.resolve(req.result);

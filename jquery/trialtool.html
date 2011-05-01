@@ -242,8 +242,14 @@
                         <a class="example-name">Iterate over all objects using cursors</a>
                         <div class="example-docs">
                             <h3>Iterate using Cursors</h3>Opens a cursor on the object store. The each() method is like the JQuery each method, allowing iteration over the various objects opened as a part of the cursor. 
-                            <br>
-                            <br>
+                            <br/>
+                            The cursor can take IDBKeyRange, or an array for defining cursors. The array should be of the format
+                            <br/>
+                            [lowerBound, upperBound, includeLowerValue, includeUpperValue].
+                            <br/>
+                            If value for lowerBound is not defined, the ranged cursor defined only has an upper bound.
+                            <br/>
+                            If value for upperBound is not defined, the ranged cursor defined only has an lower bound.
                         </div>
                         <script type = "text/javascript">
                             $.indexeddb("BookShop-1").objectStore("BookList").openCursor().each(write);

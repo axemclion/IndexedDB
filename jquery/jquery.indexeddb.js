@@ -281,7 +281,24 @@
                     }
                 }
             };
-            
+            /**
+             * Defines the bounds of a cursor range
+             * @param {Object} range
+             */
+            var bounds = function(range){
+                var result = range;
+                if ($.isArray(range)) {
+                    if (range[0] && range[1]) 
+                        result = new IDBKeyRange.bound(range[0], range[1], range[2] || true, range[3] || true);
+                    else 
+                        if (range[0] && !range[1]) 
+                            result = new IDBKeyRange.lowerBound(range[0], range[2] || true);
+                        else 
+                            if (!range[0] && range[1]) 
+                                result = new IDBKeyRange.upperBound(range[1], range[3] || true);
+                }
+                return result;
+            };
             /**
              * Returns a cursor object with each, getAll, etc.
              * @param {Object} sourcePromise
@@ -289,10 +306,7 @@
              * @param {Object} direction
              */
             var cursor = function(sourcePromise, range, direction, type){
-                if (range) {
-                    var bounds = new IDBKeyRange.bound(range[0], range[1], range[2] || true, range[3] || true);
-                }
-                var cursorPromise = promise.cursor(sourcePromise, bounds, direction, type);
+                var cursorPromise = promise.cursor(sourcePromise, bounds(range), direction, type);
                 function loop(callback, canDelete){
                     cursorPromise.then(function(cursorRequest){
                         function iterator(){
