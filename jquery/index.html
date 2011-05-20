@@ -29,8 +29,11 @@
         </style>
     </head>
     <body>
+        <div style ="text-align:center; font-size:3em;">
+            This is just a test page. To see the API working, visit <a href = "/trialtool/index.html#example=/IndexedDB/jquery/trialtool.html">this link</a>.
+        </div>
         <div>
-            To see more documentation, visit <a href = "/trialtool/index.html#example=/IndexedDB/jquery/trialtool.html">/trialtool/index.html#example=/IndexedDB/jquery/trialtool.html</a>
+            Test Examples
         </div>
         <ol id = "examples">
         </ol>
@@ -56,64 +59,68 @@
                 $("#console").empty();
             }
             
-            var callback = function(){
+            var write = writeError = function(){
                 $("#console").append($("<div >").html(JSON.stringify(arguments)));
                 //console.info.apply(this, arguments);	
             };
             
-            
             var examples = {
                 "Set Version": function(){
-                    $.indexeddb("BookShop-1").setVersion(callback);
+                    $.indexeddb("BookShop-1").setVersion(10).promise().then(write, writeError);
                 },
                 
                 "Transaction": function(){
                     var transaction = $.indexeddb("BookShop-1").transaction([], IDBTransaction.READ_WRITE);
-                    transaction.objectStore("BookList").add(data());
-                    transaction.objectStore("OldBookList").add(data());
+                    transaction.objectStore("BookList").add(data()).promise().then(write, writeError);
+                    transaction.objectStore("OldBookList").add(data()).promise().then(write, writeError);
                 },
                 
                 "Create Object Store": function(){
-                    $.indexeddb("BookShop-1").createObjectStore("BookList").promise().done(callback);
+                    $.indexeddb("BookShop-1").objectStore("BookList", {
+                        "keyPath": "id",
+                        "autoIncrement": true
+                    }).promise().then(write, writeError);
                 },
                 
                 "Delete Object Store": function(){
-                    $.indexeddb("BookShop-1").deleteObjectStore("BookList").promise().done(callback);
+                    $.indexeddb("BookShop-1").deleteObjectStore("BookList", false).promise().then(write, writeError);
                 },
                 
                 "Open Object Store, but dont create if does not exist": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", false).promise().done(callback);
+                    $.indexeddb("BookShop-1").objectStore("BookList", false).promise().then(write, writeError);
                 },
                 
                 "Open Object Store, or create if does not exist": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", true).promise().done(callback);
+                    $.indexeddb("BookShop-1").objectStore("BookList", {
+                        "keyPath": "id",
+                        "autoIncrement": true
+                    }).promise().then(write, writeError);
                 },
                 
                 "Add Data to Object Store": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").add(data()).promise().done(function(e){
-                        objId = e;
-                        callback(e)
-                    });
+                    $.indexeddb("BookShop-1").objectStore("BookList").add(book).promise().then(function(e){
+                        book.id = e;
+                        write(e);
+                    }, writeError);
                 },
                 
                 "Get data": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").get(objId).promise().done(callback);
+                    $.indexeddb("BookShop-1").objectStore("BookList").get(book.id).promise().then(write, writeError);
                 },
                 
                 "Modify Data in Object Store": function(){
-                    var value = data();
-                    value["modified-" + Math.random()] = true;
-                    value.id = objId;
-                    $.indexeddb("BookShop-1").objectStore("BookList").update(value).promise().done(callback);
+                    book["modified" + Math.random()] = true;
+                    $.indexeddb("BookShop-1").objectStore("BookList").update(book).promise().then(write, writeError);
                 },
                 
                 "Open a Cursor and list all items in the object store": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").openCursor().each(callback);
+                    $.indexeddb("BookShop-1").objectStore("BookList").openCursor().each(write);
                 },
                 
                 "Open a cursor and delete items with price that is an odd number": function(){
                     $.indexeddb("BookShop-1").objectStore("BookList").openCursor().deleteEach(function(value, key){
-                        if (value.price % 2) {
+                        if (parseInt(Math.random() * 10 % 2)) {
+                            write("Deleting", value);
                             return true;
                         }
                     });
@@ -121,28 +128,20 @@
                 
                 "Open a cursor and update items with price that is an odd number": function(){
                     $.indexeddb("BookShop-1").objectStore("BookList").openCursor().updateEach(function(value){
-                        if (value.price % 2) {
+                        if (parseInt(Math.random() * 10 % 2)) {
                             value["modified-" + Math.random()] = true;
-                            value.price = parseInt(Math.random() * 100);
-                            callback(value);
+                            write("Updating", value);
                             return value;
                         }
                     });
                 },
                 "Open an Index and iterate over its objects": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").index("price").openCursor().each(callback);
-                },
-                "Open a key cursor on an Index and iterate over its objects": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").index("price").openKeyCursor([200, 500]).each(callback);
+                    $.indexeddb("BookShop-1").objectStore("BookList").index("price").openCursor().each(write);
                 },
                 
-                "TODO": function(){
-                    $.indexeddb().open("BookShop-1").objectStore("BookList", false).openCursor();
-                    $.indexeddb().open("BookShop-1").objectStore("BookList", "noCreate").openCursor();
-                    $.indexeddb().open("BookShop-1").objectStore("BookList").openIndex();
-                    $.indexeddb().open("BookShop-1").objectStore("BookList").createIndexIndex();
-                    
-                }
+                "Open a key cursor on an Index and iterate over its objects": function(){
+                    $.indexeddb("BookShop-1").objectStore("BookList").index("price").openKeyCursor([200, 500]).each(write);
+                },
             };
             
             
@@ -157,6 +156,6 @@
                 $("#code").html(code);
             });
         </script>
-		<a href="https://github.com/axemclion/IndexedDB/tree/gh-pages/jquery"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://d3nwyuy0nl342s.cloudfront.net/img/7afbc8b248c68eb468279e8c17986ad46549fb71/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub"></a>
+        <a href="https://github.com/axemclion/IndexedDB/tree/gh-pages/jquery"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://d3nwyuy0nl342s.cloudfront.net/img/7afbc8b248c68eb468279e8c17986ad46549fb71/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub"></a>
     </body>
 </html>
