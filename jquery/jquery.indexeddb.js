@@ -1,7 +1,7 @@
 (function($){
     $.extend({
         /**
-         * The IndexedDB object used to open databases
+         * The edDB object used to open databases
          * @param {Object} dbName
          * @param {Object} config
          */
@@ -85,7 +85,6 @@
                             dfd.resolve(transaction);
                         }, dfd.reject);
                     }).promise();
-                    ;
                 },
                 /**
                  * Returns an object store if available. If object store is not available, tries to create it.
@@ -106,7 +105,7 @@
                                 try {
                                     if (createOptions) {
                                         //console.debug("Create options specified, so trying to create the database")
-                                        transaction.db.createObjectStore(objectStoreName, {
+                                        objectStore = transaction.db.createObjectStore(objectStoreName, {
                                             "autoIncrement": createOptions.autoIncrement || true,
                                             "keyPath": createOptions.keyPath || "id"
                                         }, true);
@@ -246,20 +245,22 @@
                     }).promise();
                 };
                 
-                return {
-                    "promise": objectStorePromise,
+                var result = objectStorePromise;
+                $.extend(result, {
                     "openCursor": function(range, direction){
                         return cursor(objectStorePromise, range, direction);
                     },
                     "index": function(indexName){
-                        return {
+                        var result = indexPromise = promise.index(indexName, objectStorePromise);
+                        $.extend(result, {
                             "openCursor": function(range, direction){
-                                return cursor(promise.index(indexName, objectStorePromise), range, direction);
+                                return cursor(indexPromise, range, direction);
                             },
                             "openKeyCursor": function(range, direction){
-                                return cursor(promise.index(indexName, objectStorePromise), range, direction, "openKeyCursor");
+                                return cursor(indexPromise, range, direction, "openKeyCursor");
                             }
-                        };
+                        });
+                        return result;
                     },
                     "add": function(data){
                         return crudOp("add", data);
@@ -279,7 +280,8 @@
                     "put": function(data){
                         return crudOp("put", data);
                     }
-                }
+                });
+                return result;
             };
             /**
              * Defines the bounds of a cursor range
@@ -329,8 +331,8 @@
                         //console.debug("Could not open cursor", e, req);
                     });
                 };
-                
-                return {
+                var result = cursorPromise;
+                $.extend(result, {
                     /**
                      * Updates each element when iterating on the cursor
                      * @param {Object} callback
@@ -356,10 +358,11 @@
                             return callback(val, key);
                         }, true);
                     }
-                };
+                });
+                return result;
             }; //end of cursor
-            var dbPromise = promise.db(dbName);
-            return {
+            var result = dbPromise = promise.db(dbName);
+            $.extend(result, {
                 "promise": dbPromise,
                 /**
                  * Sets the version of a database
@@ -383,13 +386,13 @@
                     else {
                         transactionPromise = promise.transaction(dbPromise, objectStoreNames, transactionType);
                     }
-                    return {
+                    var result = transactionPromise;
+                    $.extend(result, {
                         "objectStore": function(objectStoreName, canCreate){
                             return objectStore(transactionPromise, objectStoreName, canCreate);
-                        },
-                        "promise": transactionPromise,
-                    };
-                    
+                        }
+                    });
+                    return result;
                 },
                 "objectStore": function(objectStoreName, canCreate){
                     var transactionPromise = promise.transaction(dbPromise, objectStoreName, IDBTransaction.READ_WRITE);
@@ -401,13 +404,14 @@
                  * @param {Object} createOptions
                  */
                 "createObjectStore": function(objectStoreName, canCreate){
-                    objectStore(promise.versionTransaction(dbPromise), objectStoreName, canCreate);
+                    return objectStore(promise.versionTransaction(dbPromise), objectStoreName, canCreate);
                 },
                 
                 "deleteObjectStore": function(objectStoreName){
                     return promise.deleteObjectStore(promise.versionTransaction(dbPromise), objectStoreName);
                 }
-            };//end of return values for indexedDB()
+            });//end of return values for indexedDB()
+            return result;
         }
     });
 })(jQuery);

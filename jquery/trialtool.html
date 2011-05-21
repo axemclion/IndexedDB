@@ -27,7 +27,7 @@
                     <li class="example">
                         <a class="example-name">Open Database</a>
                         <script type = "text/javascript">
-                            $.indexeddb("BookShop-1").promise().then(write, writeError);
+                            $.indexeddb("BookShop-1").then(write, writeError);
                         </script>
                         <div class = "example-docs">
                             <h3>Open Database</h3>
@@ -37,7 +37,7 @@
                     <li class="example">
                         <a class="example-name" href="#">Database properties</a>
                         <script type = "text/javascript">
-                            $.indexeddb("BookShop-1").promise().then(function(db){
+                            $.indexeddb("BookShop-1").then(function(db){
                                 write("Current Database", db);
                                 write("Database version", db.version);
                             }, writeError);
@@ -59,7 +59,7 @@
                             <br>
                         </div>
                         <script type = "text/javascript">
-                            $.indexeddb("BookShop-1").setVersion(10).promise().then(write, writeError);
+                            $.indexeddb("BookShop-1").setVersion(10).then(write, writeError);
                         </script>
                     </li>
                 </ul>
@@ -87,8 +87,9 @@
                         </div>
                         <script type = "text/javascript">
                             var transaction = $.indexeddb("BookShop-1").transaction([], IDBTransaction.READ_WRITE);
-                            transaction.objectStore("BookList").add(data()).promise().then(write, writeError);
-                            transaction.objectStore("OldBookList").add(data()).promise().then(write, writeError);
+                            transaction.then(write, writeError);
+                            transaction.objectStore("BookList").add(data()).then(write, writeError);
+                            transaction.objectStore("OldBookList").add(data()).then(write, writeError);
                         </script>
                     </li>
                     <li class="example">
@@ -120,8 +121,8 @@
                             <br>
                         </div>
                         <script type = "text/javascript">
-                            // A false in the Object store indicates that the object store should not be created if it does not exist.
-                            $.indexeddb("BookShop-1").objectStore("BookList", false).promise().then(write, writeError);
+                            // A false as the second argument store indicates that the object store should not be created if it does not exist.
+                            $.indexeddb("BookShop-1").objectStore("BookList", false).then(write, writeError);
                         </script>
                     </li>
                     <li class="example" id="objectStore">
@@ -147,7 +148,7 @@
                             $.indexeddb("BookShop-1").objectStore("BookList", {
                                 "keyPath": "id",
                                 "autoIncrement": true
-                            }).promise().then(write, writeError);
+                            }).then(write, writeError);
                         </script>
                     </li>
                     <li class="example">
@@ -165,7 +166,7 @@
                         </div>
                         <script type = "text/javascript">
                             // A false in the Object store indicates that the object store should not be created if it does not exist.
-                            $.indexeddb("BookShop-1").deleteObjectStore("BookList", false).promise().then(write, writeError);
+                            $.indexeddb("BookShop-1").deleteObjectStore("BookList", false).then(write, writeError);
                         </script>
                     </li>
                     <li class="example-set">
@@ -182,7 +183,7 @@
                                 </div>
                                 <script type = "text/javascript">
                                     var book = data();
-                                    $.indexeddb("BookShop-1").objectStore("BookList").add(book).promise().then(function(e){
+                                    $.indexeddb("BookShop-1").objectStore("BookList").add(book).then(function(e){
                                         book.id = e;
                                         write(e);
                                     }, writeError);
@@ -197,7 +198,7 @@
                                     <br>
                                 </div>
                                 <script type = "text/javascript">
-                                    $.indexeddb("BookShop-1").objectStore("BookList").get(book.id).promise().then(write, writeError);
+                                    $.indexeddb("BookShop-1").objectStore("BookList").get(book.id).then(write, writeError);
                                 </script>
                             </li>
                             <li class="example" depends="add">
@@ -213,7 +214,7 @@
                                 </div>
                                 <script type = "text/javascript">
                                     book["modified" + Math.random()] = true;
-                                    $.indexeddb("BookShop-1").objectStore("BookList").update(book).promise().then(write, writeError);
+                                    $.indexeddb("BookShop-1").objectStore("BookList").update(book).then(write, writeError);
                                 </script>
                             </li>
                             <li class="example" depends="add">
@@ -228,7 +229,7 @@
                                     <br>
                                 </div>
                                 <script type = "text/javascript">
-                                    $.indexeddb("BookShop-1").objectStore("BookList").remove(book.id).promise().then(write, writeError);
+                                    $.indexeddb("BookShop-1").objectStore("BookList").remove(book.id).then(write, writeError);
                                 </script>
                             </li>
                         </ul>

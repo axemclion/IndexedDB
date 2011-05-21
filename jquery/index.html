@@ -59,65 +59,72 @@
                 $("#console").empty();
             }
             
-            var write = writeError = function(){
+            var write = function(){
                 $("#console").append($("<div >").html(JSON.stringify(arguments)));
-                //console.info.apply(this, arguments);	
+                console.info.apply(this, arguments);
             };
+            
+            var writeError = function(){
+                $("#console").append($("<div style = 'color:RED' >").html(JSON.stringify(arguments)));
+                console.error.apply(this, arguments);
+            }
             
             var examples = {
                 "Set Version": function(){
-                    $.indexeddb("BookShop-1").setVersion(10).promise().then(write, writeError);
+                    $.indexeddb("BookShop-1").setVersion(10).then(write, writeError);
                 },
                 
                 "Transaction": function(){
                     var transaction = $.indexeddb("BookShop-1").transaction([], IDBTransaction.READ_WRITE);
-                    transaction.objectStore("BookList").add(data()).promise().then(write, writeError);
-                    transaction.objectStore("OldBookList").add(data()).promise().then(write, writeError);
+                    transaction.then(write, writeError);
+                    transaction.objectStore("BookList").add(data()).then(write, writeError);
+                    transaction.objectStore("OldBookList").add(data()).then(write, writeError);
                 },
                 
                 "Create Object Store": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", {
+                    $.indexeddb("BookShop-1").createObjectStore("BookList", {
                         "keyPath": "id",
                         "autoIncrement": true
-                    }).promise().then(write, writeError);
+                    }).then(write, writeError);
                 },
                 
                 "Delete Object Store": function(){
-                    $.indexeddb("BookShop-1").deleteObjectStore("BookList", false).promise().then(write, writeError);
+                    $.indexeddb("BookShop-1").deleteObjectStore("BookList", false).then(write, writeError);
                 },
                 
                 "Open Object Store, but dont create if does not exist": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", false).promise().then(write, writeError);
+                    $.indexeddb("BookShop-1").objectStore("BookList", false).then(write, writeError);
                 },
                 
                 "Open Object Store, or create if does not exist": function(){
                     $.indexeddb("BookShop-1").objectStore("BookList", {
                         "keyPath": "id",
                         "autoIncrement": true
-                    }).promise().then(write, writeError);
+                    }).then(write, writeError);
                 },
                 
                 "Add Data to Object Store": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").add(book).promise().then(function(e){
-                        book.id = e;
-                        write(e);
+                    window.book = data();
+                    $.indexeddb("BookShop-1").objectStore("BookList").add(book).then(function(val){
+                        book.id = val;
+                        write(val);
                     }, writeError);
                 },
                 
                 "Get data": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").get(book.id).promise().then(write, writeError);
+                    $.indexeddb("BookShop-1").objectStore("BookList").get(book.id).then(write, writeError);
                 },
                 
                 "Modify Data in Object Store": function(){
                     book["modified" + Math.random()] = true;
-                    $.indexeddb("BookShop-1").objectStore("BookList").update(book).promise().then(write, writeError);
+                    $.indexeddb("BookShop-1").objectStore("BookList").update(book).then(write, writeError);
                 },
                 
-                "Open a Cursor and list all items in the object store": function(){
+                "Cursor and list all items in the object store": function(){
                     $.indexeddb("BookShop-1").objectStore("BookList").openCursor().each(write);
                 },
                 
-                "Open a cursor and delete items with price that is an odd number": function(){
+                "Cursor and delete items with price that is an odd number": function(){
                     $.indexeddb("BookShop-1").objectStore("BookList").openCursor().deleteEach(function(value, key){
                         if (parseInt(Math.random() * 10 % 2)) {
                             write("Deleting", value);
@@ -126,7 +133,7 @@
                     });
                 },
                 
-                "Open a cursor and update items with price that is an odd number": function(){
+                "Cursor and update items with price that is an odd number": function(){
                     $.indexeddb("BookShop-1").objectStore("BookList").openCursor().updateEach(function(value){
                         if (parseInt(Math.random() * 10 % 2)) {
                             value["modified-" + Math.random()] = true;
