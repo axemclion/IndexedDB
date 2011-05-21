@@ -61,12 +61,12 @@
             
             var write = function(){
                 $("#console").append($("<div >").html(JSON.stringify(arguments)));
-                console.info.apply(this, arguments);
+                //console.info.apply(this, arguments);
             };
             
             var writeError = function(){
                 $("#console").append($("<div style = 'color:RED' >").html(JSON.stringify(arguments)));
-                console.error.apply(this, arguments);
+                //console.error.apply(this, arguments);
             }
             
             var examples = {

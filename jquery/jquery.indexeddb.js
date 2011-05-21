@@ -172,35 +172,38 @@
                  * Returns an index promise, or creates one if index does not exist
                  * @param {Object} indexName
                  * @param {Object} objectStorePromise
+                 * @parasm {Object} transactionPromise is required as getting transaction.db.name is not supported in Chrome
                  */
-                index: function(indexName, objectStorePromise){
+                index: function(indexName, objectStorePromise, transactionPromise){
                     return $.Deferred(function(dfd){
                         objectStorePromise.then(function(objectStore){
-                            //console.debug("Index Promise started", objectStore)
+                            console.debug("Index Promise started", objectStore)
                             try {
                                 var index = objectStore.index(indexName + "-index");
-                                //console.debug("Index Promise compelted", index);
+                                //console.debug("Index Promise completed", index);
                                 dfd.resolve(index);
                             } 
                             catch (e) {
-                                var name = objectStore.transaction.db.name;
-                                objectStore.transaction.abort();
-                                objectStore.transaction.db.close();
-                                //console.debug("Index Promise requires version change");
-                                $.when(promise.versionTransaction(promise.db(name))).then(function(transaction){
-                                    //console.debug("Index Promise version change transaction started", transaction);
-                                    try {
-                                        var index = transaction.objectStore(objectStore.name).createIndex(indexName + "-index", indexName);
-                                        transaction.oncomplete = function(){
-                                            transaction.db.close();
+                                transactionPromise.then(function(transaction){
+                                    var name = transaction.db.name;
+                                    transaction.abort();
+                                    transaction.db.close();
+                                    //console.debug("Index Promise requires version change");
+                                    $.when(promise.versionTransaction(promise.db(name))).then(function(transaction){
+                                        console.debug("Index Promise version change transaction started", transaction);
+                                        try {
+                                            var index = transaction.objectStore(objectStore.name).createIndex(indexName + "-index", indexName);
+                                            transaction.oncomplete = function(){
+                                                transaction.db.close();
+                                            }
+                                            console.debug("Index Promise completed", index);
+                                            dfd.resolve(index);
+                                        } 
+                                        catch (e) {
+                                            console.debug("Index Promise Failed", e);
+                                            dfd.reject(e, transaction);
                                         }
-                                        //console.debug("Index Promise completed", index);
-                                        dfd.resolve(index);
-                                    } 
-                                    catch (e) {
-                                        //console.debug("Index Promise Failed", e);
-                                        dfd.reject(e, transaction);
-                                    }
+                                    }, dfd.reject);
                                 }, dfd.reject);
                             }
                         }, dfd.reject);
@@ -251,16 +254,19 @@
                         return cursor(objectStorePromise, range, direction);
                     },
                     "index": function(indexName){
-                        var result = indexPromise = promise.index(indexName, objectStorePromise);
-                        $.extend(result, {
+						/*
+						 *  Transaction promise is required here because when creating a new index, Chrome does not let us get 
+						 *  transaction.db from the object Store. 
+						 */ 
+                        var indexResult = indexPromise = promise.index(indexName, objectStorePromise, transactionPromise);
+                        return {
                             "openCursor": function(range, direction){
                                 return cursor(indexPromise, range, direction);
                             },
                             "openKeyCursor": function(range, direction){
                                 return cursor(indexPromise, range, direction, "openKeyCursor");
                             }
-                        });
-                        return result;
+                        };
                     },
                     "add": function(data){
                         return crudOp("add", data);
