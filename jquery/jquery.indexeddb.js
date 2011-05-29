@@ -6,9 +6,9 @@
          * @param {Object} config
          */
         "indexeddb": function(dbName, config){
-            window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
-            window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
-            window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+            indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
+            IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
+            IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
             
             var promise = {
                 /**
@@ -17,7 +17,7 @@
                 db: function(dbName){
                     return $.Deferred(function(dfd){
                         //console.debug("Starting DB Promise", arguments);
-                        var req = window.indexedDB.open(dbName);
+                        var req = indexedDB.open(dbName);
                         req.onsuccess = function(){
                             //console.debug("DB Promise resolved", req.result);
                             dfd.resolve(req.result);
