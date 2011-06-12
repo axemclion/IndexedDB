@@ -16,7 +16,7 @@ window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
 var linq4idbTests = {
 	"To object store in database, add data and then print" : {
 		"code" : function() {
-			LINQ.to("BookList")["in"]("BookShop1").add(data()).then(print, printError);
+			LINQ.to("BookList")["in"]("BookShop1").add(data()).then(console.info, console.error);
 		},
 		"alternate" : function() {
 			var request = window.indexedDB.open("BookShop1");
@@ -26,20 +26,20 @@ var linq4idbTests = {
 				objectStore = transaction.objectStore("BookList");
 				var addRequest = objectStore.add(data());
 				addRequest.onsuccess = function(event) {
-					print("Saved id ", addRequest.result);
+					console.info("Saved id ", addRequest.result);
 				};
 				addRequest.onerror = function(e) {
-					printError(e);
+					console.error(e);
 				}
 			};
 			request.onerror = function(e) {
-				printError(e);
+				console.error(e);
 			}
 		}
 	},
 	"From Object Store, Select and for each print" : {
 		"code" : function() {
-			LINQ.from("BookList")["in"]("BookShop1").select().forEach(print);
+			LINQ.from("BookList")["in"]("BookShop1").select().forEach(console.info);
 		},
 		"alternate" : function() {
 			var request = window.indexedDB.open("BookShop1");
@@ -50,7 +50,7 @@ var linq4idbTests = {
 				var curRequest = objectStore.openCursor();
 				curRequest.onsuccess = function(event) {
 					cursor = curRequest.result;
-					print(cursor.value, cursor.key);
+					console.info(cursor.value, cursor.key);
 					cursor["cont" + "inue"]();
 				};
 				curRequest.onerror = function(event) {
@@ -58,9 +58,9 @@ var linq4idbTests = {
 			};
 		}
 	},
-	"From ObjectStore, Order By Price, select and for each, print" : {
+	"From ObjectStore, Order By Price, select and for each, print"  : {
 		"code" : function() {
-			LINQ.from("BookList")["in"]("BookShop1").orderby("price").select().forEach(print);
+			LINQ.from("BookList")["in"]("BookShop1").orderby("price").select().forEach(console.info);
 		},
 		"alternate" : function() {
 			var request = window.indexedDB.open("BookShop1");
@@ -72,7 +72,7 @@ var linq4idbTests = {
 				var curRequest = index.openCursor();
 				curRequest.onsuccess = function(event) {
 					cursor = curRequest.result;
-					print(cursor.value, cursor.key);
+					console.info(cursor.value, cursor.key);
 					cursor["cont" + "inue"]();
 				};
 				curRequest.onerror = function(event) {
@@ -80,9 +80,9 @@ var linq4idbTests = {
 			};
 		}
 	},
-	"From ObjectStore, Order By Price REVERSED and for each, print" : {
+	"From ObjectStore, Order By Price REVERSED and for each, print"  : {
 		"code" : function() {
-			LINQ.from("BookList")["in"]("BookShop1").orderby("price", 1).select().forEach(print);
+			LINQ.from("BookList")["in"]("BookShop1").orderby("price", 1).select().forEach(console.info);
 		},
 		"alternate" : function() {
 			var request = window.indexedDB.open("BookShop1");
@@ -94,7 +94,7 @@ var linq4idbTests = {
 				var curRequest = index.openCursor(null, 1);
 				curRequest.onsuccess = function(event) {
 					cursor = curRequest.result;
-					print(cursor.value, cursor.key);
+					console.info(cursor.value, cursor.key);
 					cursor["cont" + "inue"]();
 				};
 				curRequest.onerror = function(event) {
@@ -107,7 +107,7 @@ var linq4idbTests = {
 		"code" : function() {
 			LINQ.from("BookList")["in"]("BookShop1").where("price", {
 				"equals" : 450
-			}).select().forEach(print);
+			}).select().forEach(console.info);
 		},
 		"alternate" : function() {
 		}
@@ -116,7 +116,7 @@ var linq4idbTests = {
 		"code" : function() {
 			LINQ.from("BookList")["in"]("BookShop1").where("price", {
 				"range" : [ 200, 600 ]
-			}).select().forEach(print);
+			}).select().forEach(console.info);
 		},
 		"alternate" : function() {
 			var request = window.indexedDB.open("BookShop1");
@@ -129,7 +129,7 @@ var linq4idbTests = {
 				var curRequest = index.openCursor(range);
 				curRequest.onsuccess = function(event) {
 					cursor = curRequest.result;
-					print(cursor.value, cursor.key);
+					console.info(cursor.value, cursor.key);
 					cursor["cont" + "inue"]();
 				};
 				curRequest.onerror = function(event) {
@@ -142,7 +142,7 @@ var linq4idbTests = {
 		"code" : function() {
 			LINQ.from("BookList")["in"]("BookShop1").where("price", {
 				"range" : [ 200, 600 ]
-			}).orderby("rating").select().forEach(print);
+			}).orderby("rating").select().forEach(console.info);
 		},
 		"alternate" : function() {
 			var request = window.indexedDB.open("BookShop1");
@@ -158,7 +158,7 @@ var linq4idbTests = {
 						return;
 					}
 					if (cursor.value && (cursor.value.price >= 200 || cursor.value.price <= 600)) {
-						print(cursor.value, cursor.key);
+						console.info(cursor.value, cursor.key);
 					}
 					cursor["cont" + "inue"]();
 				};
@@ -169,7 +169,7 @@ var linq4idbTests = {
 	},
 	"Remove ObjectStore in Database" : {
 		"code" : function() {
-			LINQ.remove("BookList")["in"]("BookShop1").then(print, printError);
+			LINQ.remove("BookList")["in"]("BookShop1").then(console.info, console.error);
 		},
 		"alternate" : function() {
 			var request = window.indexedDB.open("BookShop1");
@@ -178,10 +178,10 @@ var linq4idbTests = {
 				var transactionReq = db.setVersion(db.version || (isNaN(parseInt(db.version, 10)) ? 0 : parseInt(db.version, 10) + 1));
 				transactionReq.onsuccess = function() {
 					transactionReq.result.db.deleteObjectStore("BookList");
-					print(transactionReq.result.db);
+					console.info(transactionReq.result.db);
 				}
 				transactionReq.onerror = function(e) {
-					printError(e, req);
+					console.error(e, req);
 				}
 			}
 		}

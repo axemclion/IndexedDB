@@ -1,189 +1,209 @@
 <html debug="true">
     <head>
         <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-        <title>Linq4DB Test</title>
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: Cambria, Times;
-            }
-            
-            .sample {
-                display: none;
-            }
-            
-            a {
-                text-decoration: none;
-                cursor: pointer;
-            }
-            
-            h1 {
-                text-align: center;
-                background-color: #ABCDEF;
-                color: Navy;
-                margin: 0 0 1em 0;
-                padding: 0.3em;
-            }
-            
-            #examples, #examples li {
-                list-style: none;
-                background-color: #FFFFFF;
-                padding: 0;
-                margin: 0;
-            }
-            
-            .example-item .snippet {
-                height: 0;
-                opacity: 0;
-                display: block;
-                overflow: hidden;
-                width: 98%;
-                border: 0;
-                -webkit-transition: all 0.2s ease-in-out;
-                -moz-transition: all 0.2s ease-in-out;
-                -o-transition: all 0.2s ease-in-out;
-            }
-            
-            .example-item .snippet .code {
-                font-family: Monaco, Consolas, courier;
-                font-size: 1em;
-                background-color: #2A211C;
-                color: #BDAE9D;
-                width: 100%;
-                padding: 0.3em 0;
-            }
-            
-            .floating-button {
-                position: absolute;
-                left: 94%;
-                margin: 0.5em 0.5em 0 0;
-            }
-            
-            .example-name {
-                text-decoration: none;
-                color: black;
-                padding: 0.1em;
-            }
-            
-            .example-name:hover {
-                background-color: #FFFFCC;
-            }
-            
-            .example-item:target .example-name {
-                background-color: #DFECFF;
-            }
-            
-            .example-item:target .code-linq, .example-item:target .code-full {
-                height: auto;
-                opacity: 1;
-                padding: 0.3em 1em;
-                margin: 0.1em 0.5em;
-            }
-            
-            .example-more-code {
-                display: none;
-                font-size: 0.8em;
-                padding: 0 0.5em;
-                color: navy;
-            }
-            
-            .example-more-code:hover {
-                text-decoration: underline;
-            }
-            
-            .example-item:target .example-more-code {
-                display: inline;
-            }
-        </style>
+        <title>LINQ for IndexedDB : Code Playground</title>
     </head>
     <body>
         <h1 style ="height : 5%;">Linq for IndexedDB</h1>
-        <div style ="padding : 0em 1em;">
-            <h3 style ="text-align :center;">Examples</h3>
-            <ul id = "examples">
-                <li class = "sample example-item" id = "__EXAMPLE__">
-                    <div class = "example-name">
-                        <a href = "#__EXAMPLE__" class = "example-name">__EXAMPLE__</a>
-                        <a class = "example-more-code" href = "#__EXAMPLE__">[ Toggle Full IndexedDB Code ]</a>
-                    </div>
-                    <div class = "snippet code-linq" style ="clear:both">
-                        <button class = "floating-button code-run">
-                            Run
-                        </button>
-                        <textarea class = "code" style ="height : 2.5em">
-                            __EXAMPLE_CODE__
-                        </textarea>
-                    </div>
-                    <div class = "snippet code-full" style ="display:none">
-                        <button class ="floating-button code-run">
-                            Run
-                        </button>
-                        <textarea class = "code" style ="font-size : 0.7em; display : block; padding : 0.5em 1em; height : 20em">
-                            __EXAMPLE_ALTERNATE__
-                        </textarea>
-                    </div>
-                </li>
-            </ul>
+        <div id = "LinqExamples" style ="padding : 1%;">
         </div>
-        <script src="../jquery.min.js" type="text/javascript">
+        <script src="../demoer/jquery.min.js" type="text/javascript">
         </script>
-        <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js">
+        <script src = "../demoer/demoer.js" type = "text/javascript">
         </script>
         <script src= "linq4idb.js" type="text/javascript">
         </script>
-        <script src = "linq4idb-test.js" type = "text/javascript">
-        </script>
-        <script src = "beautify.js" type = "text/javascript">
-        </script>
-        <script type = "text/javascript">
-            var logger = (typeof firebug === "undefined") ? console : firebug;
-            var print = function(){
-                logger.info.apply(this, arguments);
+        <script>
+            function data(){
+                return {
+                    "bookName": "bookName-" + parseInt(Math.random() * 100),
+                    "rating": parseInt(Math.random() * 10),
+                    "price": parseInt(Math.random() * 1000),
+                    "checkedOut": new Date()
+                }
             };
             
-            var printError = function(){
-                logger.error.apply(this, arguments);
-            };
+            var LINQ = $.linq4idb();
+            window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
+            window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
+            window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
             
-            // Start populating the samples
-            (function(exampleDiv, exampleList){
-                var prettyCode = function(code){
-                    if (typeof code === "function") {
-                        code = code.toString();
+            // List of all Examples
+            var linq4idbTests = {
+                "To object store in database, add data and then print": {
+                    "code": function(){
+                        LINQ.to("BookList")["in"]("BookShop1").add(data()).then(console.info, console.error);
+                    },
+                    "alternate": function(){
+                        var request = window.indexedDB.open("BookShop1");
+                        request.onsuccess = function(e){
+                            var db = request.result;
+                            var transaction = db.transaction(["BookList"], IDBTransaction.READ_WRITE);
+                            objectStore = transaction.objectStore("BookList");
+                            var addRequest = objectStore.add(data());
+                            addRequest.onsuccess = function(event){
+                                console.info("Saved id ", addRequest.result);
+                            };
+                            addRequest.onerror = function(e){
+                                console.error(e);
+                            }
+                        };
+                        request.onerror = function(e){
+                            console.error(e);
+                        }
                     }
-                    var start = "function (){";
-                    code = code.substring(code.indexOf(start) + start.length + 2, code.length - 1).replace(/(^\s+|$\s+)/g, "");
-                    return code;
-                };
+                },
+                "From Object Store, Select and for each print": {
+                    "code": function(){
+                        LINQ.from("BookList")["in"]("BookShop1").select().forEach(console.info);
+                    },
+                    "alternate": function(){
+                        var request = window.indexedDB.open("BookShop1");
+                        request.onsuccess = function(e){
+                            var db = request.result;
+                            var transaction = db.transaction(["BookList"], IDBTransaction.READ);
+                            objectStore = transaction.objectStore("BookList");
+                            var curRequest = objectStore.openCursor();
+                            curRequest.onsuccess = function(event){
+                                cursor = curRequest.result;
+                                console.info(cursor.value, cursor.key);
+                                cursor["cont" + "inue"]();
+                            };
+                            curRequest.onerror = function(event){
+                            };
+                        };
+                    }
+                },
+                "From ObjectStore, Order By Price, select and for each, print": {
+                    "code": function(){
+                        LINQ.from("BookList")["in"]("BookShop1").orderby("price").select().forEach(console.info);
+                    },
+                    "alternate": function(){
+                        var request = window.indexedDB.open("BookShop1");
+                        request.onsuccess = function(e){
+                            var db = request.result;
+                            var transaction = db.transaction(["BookList"], IDBTransaction.READ);
+                            objectStore = transaction.objectStore("BookList");
+                            var index = objectStore.index("price-index");
+                            var curRequest = index.openCursor();
+                            curRequest.onsuccess = function(event){
+                                cursor = curRequest.result;
+                                console.info(cursor.value, cursor.key);
+                                cursor["cont" + "inue"]();
+                            };
+                            curRequest.onerror = function(event){
+                            };
+                        };
+                    }
+                },
+                "From ObjectStore, Order By Price REVERSED and for each, print": {
+                    "code": function(){
+                        LINQ.from("BookList")["in"]("BookShop1").orderby("price", 1).select().forEach(console.info);
+                    },
+                    "alternate": function(){
+                        var request = window.indexedDB.open("BookShop1");
+                        request.onsuccess = function(e){
+                            var db = request.result;
+                            var transaction = db.transaction(["BookList"], IDBTransaction.READ);
+                            objectStore = transaction.objectStore("BookList");
+                            var index = objectStore.index("price-index");
+                            var curRequest = index.openCursor(null, 1);
+                            curRequest.onsuccess = function(event){
+                                cursor = curRequest.result;
+                                console.info(cursor.value, cursor.key);
+                                cursor["cont" + "inue"]();
+                            };
+                            curRequest.onerror = function(event){
+                            };
+                        };
+                    }
+                },
                 
-                var template = exampleDiv.children(".sample").first();
-                var list = [];
-                for (example in exampleList) {
-                    var exampleItem = template.clone(false).attr("id", example);
-                    var html = exampleItem.html().replace(/__EXAMPLE__/g, example);
-                    html = html.replace(/\s*__EXAMPLE_CODE__\s*/g, prettyCode(exampleList[example].code).replace(/\s+/g, ""));
-                    html = html.replace(/\s*__EXAMPLE_ALTERNATE__\s*/g, js_beautify(prettyCode(exampleList[example].alternate)));
-                    exampleItem.html(html);
-                    exampleDiv.append(exampleItem.removeClass("sample"));
+                "From ObjectStore, Where property Equals": {
+                    "code": function(){
+                        LINQ.from("BookList")["in"]("BookShop1").where("price", {
+                            "equals": 450
+                        }).select().forEach(console.info);
+                    },
+                    "alternate": function(){
+                    }
+                },
+                "From ObjectStore, Where property in Range": {
+                    "code": function(){
+                        LINQ.from("BookList")["in"]("BookShop1").where("price", {
+                            "range": [200, 600]
+                        }).select().forEach(console.info);
+                    },
+                    "alternate": function(){
+                        var request = window.indexedDB.open("BookShop1");
+                        request.onsuccess = function(e){
+                            var db = request.result;
+                            var transaction = db.transaction(["BookList"], IDBTransaction.READ);
+                            objectStore = transaction.objectStore("BookList");
+                            var index = objectStore.index("price-index");
+                            var range = new IDBKeyRange.bound(200, 600, false, false);
+                            var curRequest = index.openCursor(range);
+                            curRequest.onsuccess = function(event){
+                                cursor = curRequest.result;
+                                console.info(cursor.value, cursor.key);
+                                cursor["cont" + "inue"]();
+                            };
+                            curRequest.onerror = function(event){
+                            };
+                        };
+                        
+                    }
+                },
+                "From ObjectStore, Where property in Range and Ordered by Rating": {
+                    "code": function(){
+                        LINQ.from("BookList")["in"]("BookShop1").where("price", {
+                            "range": [200, 600]
+                        }).orderby("rating").select().forEach(console.info);
+                    },
+                    "alternate": function(){
+                        var request = window.indexedDB.open("BookShop1");
+                        request.onsuccess = function(e){
+                            var db = request.result;
+                            var transaction = db.transaction(["BookList"], IDBTransaction.READ);
+                            objectStore = transaction.objectStore("BookList");
+                            var index = objectStore.index("rating-index");
+                            var curRequest = index.openCursor();
+                            curRequest.onsuccess = function(event){
+                                cursor = curRequest.result;
+                                if (!cursor) {
+                                    return;
+                                }
+                                if (cursor.value && (cursor.value.price >= 200 || cursor.value.price <= 600)) {
+                                    console.info(cursor.value, cursor.key);
+                                }
+                                cursor["cont" + "inue"]();
+                            };
+                            curRequest.onerror = function(event){
+                            };
+                        };
+                    }
+                },
+                "Remove ObjectStore in Database": {
+                    "code": function(){
+                        LINQ.remove("BookList")["in"]("BookShop1").then(console.info, console.error);
+                    },
+                    "alternate": function(){
+                        var request = window.indexedDB.open("BookShop1");
+                        request.onsuccess = function(e){
+                            var db = request.result;
+                            var transactionReq = db.setVersion(db.version || (isNaN(parseInt(db.version, 10)) ? 0 : parseInt(db.version, 10) + 1));
+                            transactionReq.onsuccess = function(){
+                                transactionReq.result.db.deleteObjectStore("BookList");
+                                console.info(transactionReq.result.db);
+                            }
+                            transactionReq.onerror = function(e){
+                                console.error(e, req);
+                            }
+                        }
+                    }
                 }
-                
-                function run(code){
-                    logger.clear();
-                    eval(code);
-                    $(".more-code").hide();
-                }
-                
-                $("a.example-more-code").live("click", function(e){
-                    $(this).parent().nextAll(".code-full").toggle();
-                });
-                
-                $("button.code-run").live("click", function(e){
-                    run($(this).nextAll(".code").text());
-                });
-                
-            })($("#examples"), linq4idbTests);
+            }
+            loadDemoes("#LinqExamples", linq4idbTests);
         </script>
-        <!--a href="http://github.com/axemclion"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://d3nwyuy0nl342s.cloudfront.net/img/7afbc8b248c68eb468279e8c17986ad46549fb71/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub"></a-->
     </body>
 </html>
