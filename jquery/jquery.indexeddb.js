@@ -225,6 +225,11 @@
              */
             var objectStore = function(transactionPromise, objectStoreName, createOptions){
                 var objectStorePromise = $.Deferred(function(dfd){
+                    if (typeof createOptions === "undefined") {
+                        createOptions = {
+                            "autoIncrement": true
+                        };
+                    }
                     $.when(promise.objectStore(transactionPromise, objectStoreName, createOptions)).then(function(objectStore){
                         dfd.resolve(objectStore);
                     }, function(e, db){
@@ -238,7 +243,8 @@
                     return $.Deferred(function(dfd){
                         objectStorePromise.then(function(objectStore){
                             try {
-                                var req = objectStore[op](args);
+                                //TODO : Accept all args that are sent
+                                var req = objectStore[op](args[0], args[1]);
                                 req.onsuccess = function(event){
                                     //console.debug("Performed", op, req.result);
                                     dfd.resolve(req.result);
@@ -279,22 +285,22 @@
                         };
                     },
                     "add": function(data, key){
-                        return crudOp("add", data, key);
+                        return crudOp("add", [data, key]);
                     },
                     "delete": function(data){
-                        return crudOp("delete", data);
+                        return crudOp("delete", [data]);
                     },
                     "remove": function(data){
-                        return crudOp("delete", data);
+                        return crudOp("delete", [data]);
                     },
                     "get": function(data){
-                        return crudOp("get", data);
+                        return crudOp("get", [data]);
                     },
                     "update": function(data, key){
-                        return crudOp("put", data, key);
+                        return crudOp("put", [data, key]);
                     },
                     "put": function(data, key){
-                        return crudOp("put", data, key);
+                        return crudOp("put", [data, key]);
                     }
                 });
                 return result;

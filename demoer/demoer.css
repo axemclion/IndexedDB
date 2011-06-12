@@ -8,19 +8,6 @@ body {
     display: none;
 }
 
-a {
-    text-decoration: none;
-    cursor: pointer;
-}
-
-h1 {
-    text-align: center;
-    background-color: #ABCDEF;
-    color: Navy;
-    margin: 0 0 1em 0;
-    padding: 0.3em;
-}
-
 .examples {
     margin: 0;
     padding: 0;

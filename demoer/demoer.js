@@ -2,6 +2,7 @@ var prettyCode = function(code) {
 	if (typeof code === "function") {
 		code = code.toString();
 	}
+	code = code || "";
 	var start = "function (){";
 	code = code.substring(code.indexOf(start) + start.length + 2, code.length - 1).replace(/(^\s+|$\s+)/g, "");
 	return code;
@@ -24,9 +25,16 @@ var getUrls = function(container, callback) {
 	var count = 0;
 	var timerHandle = window.setInterval(function() {
 		count++;
-		if (count > 10 || typeof firebug !== "undefined") {
+		if (count > 10) {
 			window.clearInterval(timerHandle);
-			window.console = (typeof firebug !== "undefined") ? firebug : window.console;
+		}
+		if (typeof firebug !== "undefined") {
+			window.clearInterval(timerHandle);
+			window.console = firebug;
+			var firebugUI = document.getElementById("FirebugUI");
+			if (firebugUI) {
+				firebugUI.style.position = "static";
+			}
 		}
 	}, 1000);
 
@@ -54,7 +62,7 @@ var loadDemoes = function(container, exampleList) {
 		for (example in exampleList) {
 			var exampleItem = template.clone(false).attr("id", example);
 			var html = exampleItem.html().replace(/__EXAMPLE__/g, example);
-			html = html.replace(/\s*__EXAMPLE_CODE__\s*/g, prettyCode(exampleList[example].code).replace(/\s+/g, ""));
+			html = html.replace(/\s*__EXAMPLE_CODE__\s*/g, prettyCode(exampleList[example].code));
 			html = html.replace(/\s*__EXAMPLE_ALTERNATE__\s*/g, js_beautify(prettyCode(exampleList[example].alternate)));
 			exampleItem.html(html);
 			exampleDiv.append(exampleItem.removeClass("sample"));
@@ -63,6 +71,7 @@ var loadDemoes = function(container, exampleList) {
 
 	var run = function(code, title) {
 		console.group(title);
+		console.log(code);
 		eval(code);
 		setTimeout(function() {
 			console.groupEnd(title);
@@ -75,6 +84,6 @@ var loadDemoes = function(container, exampleList) {
 	});
 
 	$("button.code-run").live("click", function(e) {
-		run($(this).nextAll(".code").text(), $(this).parent().siblings(".example-name").children("a.example-title").html());
+		run($(this).nextAll(".code").val(), $(this).parent().siblings(".example-name").children("a.example-title").html());
 	});
 };

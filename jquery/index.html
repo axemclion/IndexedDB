@@ -1,168 +1,27 @@
 <html>
     <head>
         <title>IndexedDB Jquery Plugin</title>
-        <style>
-            li {
-                padding: 0.2em 1em;
-            }
-            
-            #console {
-                clear: both;
-                margin: 1em 0 1em 0;
-                padding: 0.5em;
-                height: 50%;
-                overflow-y: scroll;
-                border: SOLID 1px GRAY;
-            }
-            
-            #console div {
-                padding: 0.2em;
-                font-size: 0.8em;
-                color: #333333;
-            }
-            
-            #code {
-                font-family: courier;
-                font-size: 1.5em;
-                margin: 1em;
-            }
-        </style>
     </head>
     <body>
-        <div style ="text-align:center; font-size:3em;">
-            This is just a test page. To see the API working, visit <a href = "/trialtool/index.html#example=/IndexedDB/jquery/trialtool.html">this link</a>.
+        <div style ="height : 80px; text-align: center; overflow : hidden" class = "title">
+            <h1 style ="background-color: #ABCDEF; color: Navy; margin: 0; padding: 0.3em;">Jquery Plugin for IndexedDB - Examples</h1>
+            <div style ="background-color : #BCDEFF; padding : 0.3em 0">
+                This is a test page. To see the API playground, visit <a href = "/trialtool/index.html#example=/IndexedDB/jquery/trialtool.html">this link</a>. 
+                The IndexedDB specification is in draft and can change. These examples work best against Firefox 4.0.1 and Chrome 14.0 canary. 
+            </div>
         </div>
-        <div>
-            Test Examples
+        <div id = "examples" style ="padding : 1%;">
         </div>
-        <ol id = "examples">
-        </ol>
-        <div id = "code">
-            {{ Code will be show here }}
-        </div>
-        <a href = "javascript:clear()" style ="clear:both; display: block; ">Clear Console</a>
-        <div id = "console">
-        </div>
-        <script src="../jquery.min.js" type="text/javascript">
+        <script src="../demoer/jquery.min.js" type="text/javascript">
         </script>
         <script src= "jquery.indexeddb.js" type="text/javascript">
         </script>
-        <script charset="utf-8">
-            function data(){
-                return {
-                    "bookName": "bookName-" + parseInt(Math.random() * 100),
-                    "price": parseInt(Math.random() * 1000),
-                    "checkedOut": new Date()
-                }
-            };
-            function clear(){
-                $("#console").empty();
-            }
-            
-            var write = function(){
-                $("#console").append($("<div >").html(JSON.stringify(arguments)));
-                //console.info.apply(this, arguments);
-            };
-            
-            var writeError = function(){
-                $("#console").append($("<div style = 'color:RED' >").html(JSON.stringify(arguments)));
-                //console.error.apply(this, arguments);
-            }
-            
-            var examples = {
-                "Set Version": function(){
-                    $.indexeddb("BookShop-1").setVersion(10).then(write, writeError);
-                },
-                
-                "Transaction": function(){
-                    var transaction = $.indexeddb("BookShop-1").transaction([], IDBTransaction.READ_WRITE);
-                    transaction.then(write, writeError);
-                    transaction.objectStore("BookList").add(data()).then(write, writeError);
-                    transaction.objectStore("OldBookList").add(data()).then(write, writeError);
-                },
-                
-                "Create Object Store": function(){
-                    $.indexeddb("BookShop-1").createObjectStore("BookList", {
-                        "keyPath": "id",
-                        "autoIncrement": true
-                    }).then(write, writeError);
-                },
-                
-                "Delete Object Store": function(){
-                    $.indexeddb("BookShop-1").deleteObjectStore("BookList", false).then(write, writeError);
-                },
-                
-                "Open Object Store, but dont create if does not exist": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", false).then(write, writeError);
-                },
-                
-                "Open Object Store, or create if does not exist": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList", {
-                        "keyPath": "id",
-                        "autoIncrement": true
-                    }).then(write, writeError);
-                },
-                
-                "Add Data to Object Store": function(){
-                    window.book = data();
-                    $.indexeddb("BookShop-1").objectStore("BookList").add(book).then(function(val){
-                        book.id = val;
-                        write(val);
-                    }, writeError);
-                },
-                
-                "Get data": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").get(book.id).then(write, writeError);
-                },
-                
-                "Modify Data in Object Store": function(){
-                    book["modified" + Math.random()] = true;
-                    $.indexeddb("BookShop-1").objectStore("BookList").update(book).then(write, writeError);
-                },
-                
-                "Cursor and list all items in the object store": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").openCursor().each(write);
-                },
-                
-                "Cursor and delete items with price that is an odd number": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").openCursor().deleteEach(function(value, key){
-                        if (parseInt(Math.random() * 10 % 2)) {
-                            write("Deleting", value);
-                            return true;
-                        }
-                    });
-                },
-                
-                "Cursor and update items with price that is an odd number": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").openCursor().updateEach(function(value){
-                        if (parseInt(Math.random() * 10 % 2)) {
-                            value["modified-" + Math.random()] = true;
-                            write("Updating", value);
-                            return value;
-                        }
-                    });
-                },
-                "Open an Index and iterate over its objects": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").index("price").openCursor().each(write);
-                },
-                
-                "Open a key cursor on an Index and iterate over its objects": function(){
-                    $.indexeddb("BookShop-1").objectStore("BookList").index("price").openKeyCursor([200, 500]).each(write);
-                },
-            };
-            
-            
-            for (example in examples) {
-                $("#examples").append($("<li><a class = 'command' href = 'javascript:clear();examples[\"" + example + "\"]()'>" + example + "</a></li>"));
-            }
-            
-            $(".command").live("click", function(){
-                var code = examples[$(this).html()].toString();
-                var start = "function (){";
-                code = code.substring(code.indexOf(start) + start.length + 2, code.length - 1);
-                $("#code").html(code);
-            });
+        <script src = "jquery.indexeddb.test.js" type = "text/javascript">
         </script>
-        <a href="https://github.com/axemclion/IndexedDB/tree/gh-pages/jquery"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://d3nwyuy0nl342s.cloudfront.net/img/7afbc8b248c68eb468279e8c17986ad46549fb71/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub"></a>
+        <script src = "../demoer/demoer.js" type = "text/javascript">
+        </script>
+        <script>
+            loadDemoes("#examples", jqueryIndexedDB_Test);
+        </script>
     </body>
 </html>
