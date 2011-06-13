@@ -19,6 +19,7 @@ var getUrls = function(container, callback) {
 	// Loading Firebug
 	var E = document.createElement('script');
 	E.setAttribute('id', "FirebugLite");
+	//E.setAttribute("src", "http://localhost/software/firebug-lite/build/firebug-lite.js#startOpened")
 	E.setAttribute('src', "https://getfirebug.com/firebug-lite.js#startOpened");
 	E.setAttribute("FirebugLite", "4");
 	document.getElementsByTagName('body')[0].appendChild(E);
@@ -71,7 +72,6 @@ var loadDemoes = function(container, exampleList) {
 
 	var run = function(code, title) {
 		console.group(title);
-		console.log(code);
 		eval(code);
 		setTimeout(function() {
 			console.groupEnd(title);
