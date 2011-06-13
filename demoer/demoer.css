@@ -35,7 +35,7 @@ body {
 
 .example-item .snippet .code {
     font-family: Monaco, Consolas, courier;
-    font-size: 1em;
+    font-size: 0.9em;
     background-color: #2A211C;
     color: #BDAE9D;
     width: 100%;

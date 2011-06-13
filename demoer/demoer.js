@@ -19,7 +19,7 @@ var getUrls = function(container, callback) {
 	// Loading Firebug
 	var E = document.createElement('script');
 	E.setAttribute('id', "FirebugLite");
-	E.setAttribute('src', "http://localhost/software/firebug-lite/build/firebug-lite.js#startOpened");
+	E.setAttribute('src', "https://getfirebug.com/firebug-lite.js#startOpened");
 	E.setAttribute("FirebugLite", "4");
 	document.getElementsByTagName('body')[0].appendChild(E);
 	var count = 0;
@@ -62,7 +62,7 @@ var loadDemoes = function(container, exampleList) {
 		for (example in exampleList) {
 			var exampleItem = template.clone(false).attr("id", example);
 			var html = exampleItem.html().replace(/__EXAMPLE__/g, example);
-			html = html.replace(/\s*__EXAMPLE_CODE__\s*/g, prettyCode(exampleList[example].code));
+			html = html.replace(/\s*__EXAMPLE_CODE__\s*/g, js_beautify(prettyCode(exampleList[example].code)));
 			html = html.replace(/\s*__EXAMPLE_ALTERNATE__\s*/g, js_beautify(prettyCode(exampleList[example].alternate)));
 			exampleItem.html(html);
 			exampleDiv.append(exampleItem.removeClass("sample"));
