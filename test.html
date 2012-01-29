@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+    <head>
+        IndexedDB - Test file
+    </head>
+    <body>
+        <div id = "testLinks">
+            Links for each function that is tested would be generated here.
+        </div>
+        <script>
+            var DB = {
+            	"name": "SampleDatabase"
+            }
+            
+            var IndexedDBTest = (function(){
+            	var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
+            	var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
+            	var IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+            	
+            	return {
+            		"All": function(){
+            			try {
+            				var dbRequest = indexedDB.open(DB.name, 100);
+            				DB.val = dbRequest;
+            				dbRequest.onsuccess = function(){
+            					console.log("DB Open Success ", dbRequest);
+            					
+            					// Opening the transaction
+            					var transaction = dbRequest.result.transaction("ObjectStore1", IDBTransaction.READ_WRITE);
+            					console.log(transaction);
+            					
+            					// Opening the Object Store
+            					var objectStore = transaction.objectStore("ObjectStore1");
+            					console.log(objectStore);
+            					var id = Math.random();
+            					
+            					// Add a new Object
+            					var addRequest = objectStore.add({
+            						"id": id,
+            						"value": Math.random()
+            					});
+            					addRequest.onsuccess = function(){
+            						console.log("Add Request SUCCESS", addRequest);
+            					};
+            					addRequest.onerror = function(){
+            						console.log("Add Request ERROR", addRequest);
+            					};
+            					
+            					// Get the saved Object
+            					var getRequest = objectStore.get(id);
+            					getRequest.onsuccess = function(){
+            						console.log("Get request Success", getRequest.result, getRequest);
+            					};
+            					getRequest.onerror = function(){
+            						console.log("Get request Success", getRequest.error, getRequest);
+            					};
+            					
+            					// Update the saved Object
+            					var updateRequest = objectStore.put({
+            						id: "id",
+            						"modified": Math.random()
+            					});
+            					updateRequest.onsuccess = function(){
+            						console.log("Update request Success", updateRequest.result, updateRequest);
+            					};
+            					updateRequest.onerror = function(){
+            						console.log("Update request Success", updateRequest.error, updateRequest);
+            					};
+            					
+            					
+            					// Iterate using cursors
+            					var cursorRequest = objectStore.openCursor();
+            					cursorRequest.onsuccess = function(){
+            						console.log("Cursor Success", cursorRequest.result, cursorRequest);
+            						cursorRequest.result && cursorRequest.result["continue"]();
+            					};
+            					cursorRequest.onerror = function(){
+            						console.log("Cursor Error", cursorRequest.error, cursorRequest);
+            					};
+            					
+            				};
+            				dbRequest.onerror = function(){
+            					console.log("DB Open ERROR ", dbRequest);
+            				};
+            				dbRequest.onupgradeneeded = function(){
+            					console.log("DB Open UPGRADE_NEEDED", dbRequest);
+            					var db = dbRequest.result;
+            					try {
+            						var objectStore = db.createObjectStore("ObjectStore1", {
+            							"keyPath": "id",
+            							"autoIncrement": true
+            						});
+            						console.log("Created ObjectStore", objectStore)
+            					} 
+            					catch (e) {
+            						console.info(e);
+            					}
+            				};
+            			} 
+            			catch (e) {
+            				console.info(e);
+            			}
+            			
+            		},
+            		
+            		
+            		"Check for IndexedDB Object": function(){
+            			DB.val = indexedDB;
+            			console.log(indexedDB);
+            		},
+            		
+            		"Open a Database, no version specified": function(){
+            			try {
+            				var dbRequest = indexedDB.open(DB.name);
+            				DB.val = dbRequest;
+            				dbRequest.onsuccess = function(){
+            					DB.version = dbRequest.result.version;
+            					console.log("DB Open Success ", dbRequest);
+            				};
+            				dbRequest.onerror = function(){
+            					console.log("DB Open ERROR ", dbRequest);
+            				};
+            				dbRequest.onblocked = function(){
+            					console.log("DB Open BLOCKED", dbRequest);
+            				};
+            				dbRequest.onupgradeneeded = function(){
+            					console.log("DB Open UPGRADE_NEEDED", dbRequest);
+            				};
+            				dbRequest.onversionchange = function(){
+            					console.log("DB Open UPGRADE_NEEDED", dbRequest);
+            				};
+            			} 
+            			catch (e) {
+            				console.info(e);
+            			}
+            		},
+            		
+            		"Open a database with higher version": function(){
+            			try {
+            				var dbRequest = indexedDB.open(DB.name, 1);
+            				DB.val = dbRequest;
+            				dbRequest.onsuccess = function(){
+            					console.log("DB Open Success", dbRequest);
+            				};
+            				dbRequest.onerror = function(){
+            					console.log("DB Open ERROR ", dbRequest);
+            				};
+            				dbRequest.onblocked = function(){
+            					console.log("DB Open BLOCKED", dbRequest);
+            				};
+            				dbRequest.onupgradeneeded = function(){
+            					console.log("DB Open UPGRADE_NEEDED", dbRequest);
+            				};
+            				dbRequest.onversionchange = function(){
+            					console.log("DB Open UPGRADE_NEEDED", dbRequest);
+            				};
+            			} 
+            			catch (e) {
+            				console.info(e);
+            			}
+            		},
+            		
+            		
+            		"Delete Database": function(){
+            			var dbRequest = indexedDB.deleteDatabase(DB.name);
+            			DB.val = dbRequest
+            			dbRequest.onsuccess = function(){
+            				console.log("Database deleted ", dbRequest.result);
+            			};
+            			dbRequest.onerror = function(){
+            				console.log("Database deletion failed", dbRequest.result);
+            			}
+            		},
+            		
+            		"Create Object Store": function(){
+            			try {
+            				var dbRequest = indexedDB.open(DB.name, 2);
+            				DB.val = dbRequest;
+            				dbRequest.onsuccess = function(){
+            					console.log("DB Open Success", dbRequest);
+            					DB.version = dbRequest.result.version;
+            				};
+            				dbRequest.onerror = function(){
+            					console.log("DB Open ERROR ", dbRequest);
+            				};
+            				dbRequest.onblocked = function(){
+            					console.log("DB Open BLOCKED", dbRequest);
+            				};
+            				dbRequest.onupgradeneeded = function(){
+            					console.log("DB Open UPGRADE_NEEDED", dbRequest);
+            				};
+            			} 
+            			catch (e) {
+            				console.info(e);
+            			}
+            			
+            		}
+            	};
+            })();
+            
+            var testGenerator = (function(O, test){
+            	var tmpl = "<li><a href ='javascript:delete DB.val; IndexedDBTest[\"__NAME__\"]();'>__NAME__</a></li>"
+            	var html = ["<ul>"];
+            	for (f in O) {
+            		html.push(tmpl.replace(/__NAME__/g, f));
+            	}
+            	html.push("</ul>");
+            	test.innerHTML = html.join("");
+            })(IndexedDBTest, document.getElementById("testLinks"));
+        </script>
+    </body>
+</html>

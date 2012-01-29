@@ -1,0 +1,701 @@
+<html>
+    <head>
+        <title>Firefox 4 Beta Indexed DB</title>
+    </head>
+    <body>
+        <ul>
+            <li class = "example-set">
+                <a class = "example-set-name">webkitIndexedDB</a>
+                <ul>
+                    <li class = "example" id = "prereq">
+                        <a class = "example-name">Pre Requisites</a>
+                        <script type = "text/javascript">
+                            // Initialising the window.IndexedDB Object
+                            window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
+                            window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
+                            window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+                            var DAO = {};
+                        </script>
+                        <link class = "example-docs" href = "div#reference>div#prereq">
+                    </li>
+                    <li class = "example" id = "db" depends = "prereq">
+                        <a class = "example-name">Open Database</a>
+                        <script type="text/javascript">
+                            document.write("Trying to open database ...");
+                            var request = window.indexedDB.open("BookShop1");
+                            request.onsuccess = function(event){
+                                DAO.db = request.result;
+                                document.write("Database Opened", DAO.db);
+                                DAO.db.onversionchange = function(){
+                                    write("Version change request, so closing the database");
+                                    DAO.db.close();
+                                    delete DAO.db;
+                                };
+                            };
+                            request.onerror = function(e){
+                                writeError(e);
+                            };
+                        </script>
+                        <link class = "example-docs" href = "div#reference>div#openDatabase">
+                    </li>
+                    <li class = "example-set">
+                        <a class = "example-set-name">Object Stores</a>
+                        <ul>
+                            <li class = "example" depends = "db" id = "createObjectStore">
+                                <a class = "example-name">Create Object store</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.db", function(){
+                                        var request = DAO.db.setVersion(parseInt(Math.random() * 100));
+                                        request.onsuccess = function(e){
+                                            document.write("Version changed to ", DAO.db.version, ", so trying to create a database now.");
+                                            DAO.objectStore = DAO.db.createObjectStore("BookList", {
+                                                "keyPath": "id",
+                                                "autoIncrement": true
+                                            }, true);
+                                            document.write("Object store created: ", DAO.objectStore);
+                                        };
+                                        request.onerror = function(e){
+                                            document.write("Could not set the version, so cannot create database", e);
+                                        };
+                                        request.onblocked = function(e){
+                                            write("The database is open in another tab. Please close that tab");
+                                        };
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#createObjectStore">
+                            </li>
+                            <li class = "example" id = "objectStore" depends = "db">
+                                <a class = "example-name">Open Object Stores</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.db", function(){
+                                        document.write("Opening an Object Store using a transaction.");
+                                        DAO.newTransactionObjectStore = function(){
+                                            try {
+                                                var transaction = DAO.db.transaction(["BookList"], IDBTransaction.READ_WRITE);
+                                                transaction.oncomplete = function(e){
+                                                    delete DAO.objectStore;
+                                                    document.write("===== Transaction Complete");
+                                                };
+                                                transaction.onabort = function(e){
+                                                    document.write("===== Transaction Aborted");
+                                                };
+                                                DAO.objectStore = transaction.objectStore("BookList");
+                                                document.write("==== New Transaction", DAO.objectStore);
+                                            } 
+                                            catch (e) {
+                                                write("Could not open objectStore. You may have to create it first");
+                                                writeError(e);
+                                            }
+                                        };
+                                        DAO.newTransactionObjectStore();
+                                        write("Object Store Opened", DAO.objectStore);
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#openObjectStore">
+                            </li>
+                            <li class = "example" depends = "db">
+                                <a class = "example-name">Get All Object Stores</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.db", function(){
+                                        write("List of Object Stores", DAO.db.objectStoreNames);
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#getAllStores">
+                            </li>
+                            <li class = "example" depends = "db">
+                                <a class = "example-name">Remove Object Store</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.db", function(){
+                                        write("Trying to change the database version");
+                                        var request = DAO.db.setVersion(parseInt(Math.random() * 100));
+                                        write("Database version changed, now trying to delete the database");
+                                        request.onsuccess = function(e){
+                                            DAO.db.deleteObjectStore("BookList");
+                                            write("Deleted Object store Booklist. The remaining object stores are ", DAO.db.objectStoreNames);
+                                        };
+                                        request.onblocked = function(e){
+                                            write("The database is open in another tab. Please close that tab");
+                                        };
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#removeObjectStore">
+                            </li>
+                            <li class = "example-set">
+                                <a class = "example-set-name">Data Operations</a>
+                                <ul>
+                                    <li class = "example" id = "saveData" depends = "objectStore">
+                                        <a class = "example-name">Save Data</a>
+                                        <script type = "text/javascript">
+                                            var data = {
+                                                "bookName": "Book-" + Math.random(),
+                                                "author": "asdasd",
+                                                "price": parseInt(Math.random() * 1000),
+                                                "rating": (Math.random() > 0.5 ? "good" : "bad"),
+                                                "id": new Date().getTime()
+                                            };
+                                            
+                                            ConsoleHelper.waitFor("DAO.newTransactionObjectStore", function(){
+                                                DAO.newTransactionObjectStore();
+                                                document.write("Trying to save...", data);
+                                                var request = DAO.objectStore.add(data);
+                                                request.onsuccess = function(event){
+                                                    document.write("Saved id ", request.result);
+                                                    DAO.objectId = request.result;
+                                                };
+                                                request.onerror = function(e){
+                                                    writeError(e);
+                                                    DAO.transaction.abort();
+                                                };
+                                            });
+                                        </script>
+                                        <link class = "example-docs" href = "div#reference>div#save">
+                                    </li>
+                                    <li class = "example" depends = "saveData">
+                                        <a class= "example-name">Get Data</a>
+                                        <script type="text/javascript">
+                                            ConsoleHelper.waitFor("DAO.objectId", function(){
+                                                DAO.newTransactionObjectStore();
+                                                document.write("Trying to get the last saved object using saved example with id ", DAO.objectId);
+                                                var request = DAO.objectStore.get(DAO.objectId);
+                                                request.onsuccess = function(event){
+                                                    document.write("Got data ", request.result);
+                                                    DAO.objectId = request.result.id;
+                                                };
+                                                request.onerror = function(e){
+                                                    document.write("Could not get object");
+                                                    writeError(e);
+                                                };
+                                            });
+                                        </script>
+                                        <link class = "example-docs" href = "div#reference>div#get">
+                                    </li>
+                                    <li class = "example" depends = "saveData">
+                                        <a class = "example-name">Modify data (TODO)</a>
+                                        <script type="text/javascript">
+                                            ConsoleHelper.waitFor("DAO.objectId", function(){
+                                                var modifiedData = {
+                                                    "bookName": "Modified-" + Math.random(),
+                                                    "new_prop": "Modified",
+                                                    "rating": (Math.random() > 0.5 ? "good" : "bad"),
+                                                    "id": DAO.objectId
+                                                };
+                                                DAO.newTransactionObjectStore();
+                                                document.write("Trying to modify the last saved object using saved example...", modifiedData);
+                                                var request = DAO.objectStore.put(modifiedData);
+                                                request.onsuccess = function(event){
+                                                    document.write("Modified id ", request.result);
+                                                    DAO.objectId = request.result;
+                                                };
+                                                request.onerror = function(e){
+                                                    writeError(e);
+                                                };
+                                            });
+                                        </script>
+                                        <link class = "example-docs" href = "div#reference>div#modify">
+                                    </li>
+                                    <li class = "example" depends = "objectStore">
+                                        <a class = "example-name">Get All Data (No method)</a>
+                                        <script type = "text/javascript">
+                                            ConsoleHelper.waitFor("DAO.newTransactionObjectStore", function(){
+                                                DAO.newTransactionObjectStore();
+                                                document.write("Getting all data ... ");
+                                                var request = DAO.objectStore.getAll();
+                                                request.onsuccess = function(e){
+                                                    document.write("List of objects ", request.result);
+                                                    DAO.objectId = request.result[request.result.length - 1].id;
+                                                };
+                                                request.onerror = function(e){
+                                                    document.write("Could not get all objects");
+                                                };
+                                            });
+                                        </script>
+                                        <link class = "example-docs" href = "div#reference>div#getAllData">
+                                    </li>
+                                    <li class = "example" depends = "saveData">
+                                        <a class= "example-name">Delete Data</a>
+                                        <script type="text/javascript">
+                                            ConsoleHelper.waitFor("DAO.objectId", function(){
+                                                DAO.newTransactionObjectStore();
+                                                document.write("Trying to delete the last saved object using saved example...", DAO.objectId);
+                                                var request = DAO.objectStore["delete"](DAO.objectId);
+                                                request.onsuccess = function(event){
+                                                    document.write("Removed id ", request.result);
+                                                    delete DAO.objectId;
+                                                };
+                                                request.onerror = function(){
+                                                    document.write("Could not delete object");
+                                                };
+                                            });
+                                        </script>
+                                        <link class = "example-docs" href = "div#reference>div#delete">
+                                    </li>
+                                    <li class = "example" depends = "newTransactionObjectStore">
+                                        <a class= "example-name">Clear ObjectStore (No Method)</a>
+                                        <script type="text/javascript">
+                                            ConsoleHelper.waitFor("DAO.objectId", function(){
+                                                DAO.newTransactionObjectStore();
+                                                document.write("Trying to delete the last saved object using saved example...", DAO.objectId);
+                                                var request = DAO.objectStore.clear();
+                                                request.onsuccess = function(event){
+                                                    document.write("Cleared ObjectStore");
+                                                };
+                                                request.onerror = function(){
+                                                    document.write("Could not delete object");
+                                                };
+                                            });
+                                        </script>
+                                        <link class = "example-docs" href = "div#reference>div#delete">
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class = "example-set">
+                        <a class = "example-set-name">Cursors</a>
+                        <ul>
+                            <li class = "example" id = "cursor" depends = "objectStore">
+                                <a class = "example-name">Open Cursor</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.newTransactionObjectStore", function(){
+                                        // Function to call when a new cursor is required
+                                        DAO.onCursor = function(callback){
+                                            DAO.newTransactionObjectStore();
+                                            var request = DAO.objectStore.openCursor();
+                                            request.onsuccess = function(event){
+                                                DAO.cursor = request.result;
+                                                callback();
+                                            };
+                                            request.onerror = function(event){
+                                                write("Could not open cursor", DAO.cursor);
+                                                writeError(e);
+                                            };
+                                        };
+                                        DAO.onCursor(function(){
+                                            write("Cursor Created", DAO.cursor);
+                                        });
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#cursor">
+                            </li>
+                            <li class = "example" depends = "objectStore">
+                                <a class = "example-name">Ranged Cursor</a>
+                                <script type = "text/javascript">
+                                    /**
+                                     * Args : Lower Bound, Upper Bound, Include Lower val? , Include Upper Val?
+                                     */
+                                    ConsoleHelper.waitFor("DAO.newTransactionObjectStore", function(){
+                                        // Function to call when a new cursor is required
+                                        DAO.keyRange = new IDBKeyRange.bound(1, new Date().getTime(), true, false);
+                                        write("Range Defined", DAO.keyRange);
+                                        
+                                        DAO.onCursor = function(callback){
+                                            DAO.newTransactionObjectStore();
+                                            var request = DAO.objectStore.openCursor(DAO.keyRange);
+                                            request.onsuccess = function(event){
+                                                DAO.cursor = request.result;
+                                                callback();
+                                            };
+                                            request.onerror = function(event){
+                                                write("Could not open cursor", DAO.cursor);
+                                                writeError(e);
+                                            };
+                                        };
+                                        DAO.onCursor(function(){
+                                            write("Cursor Created", DAO.cursor);
+                                        });
+                                    });
+                                </script>
+                            </li>
+                            <li class = "example" depends = "cursor">
+                                <a class = "example-name">Get data using cursor</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.onCursor", function(){
+                                        DAO.onCursor(function(){
+                                            if (!DAO.cursor) {
+                                                return;
+                                            }
+                                            write(DAO.cursor.key, DAO.cursor.value);
+                                            DAO.cursor["continue"]();
+                                        });
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#cursor_continue">
+                            </li>
+                            <li class = "example" depends = "cursor">
+                                <a class = "example-name">Update data</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.onCursor", function(){
+                                        DAO.onCursor(function(){
+                                            if (!DAO.cursor) {
+                                                return;
+                                            }
+                                            DAO.cursor.value["new_prop_cursor"] = Math.random();
+                                            write("Updating", DAO.cursor.key, DAO.cursor.value);
+                                            DAO.cursor.update(DAO.cursor.value);
+                                            DAO.cursor["continue"]();
+                                        });
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#cursor_update">
+                            </li>
+                            <li class = "example" depends = "cursor">
+                                <a class = "example-name">Remove All Objects</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.onCursor", function(){
+                                        DAO.onCursor(function(){
+                                            if (!DAO.cursor) {
+                                                return;
+                                            }
+                                            write("Removing", DAO.cursor.key, DAO.cursor.value);
+                                            DAO.cursor["delete"]();
+                                            DAO.cursor["continue"]();
+                                        });
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#cursor_remove">
+                            </li>
+                        </ul>
+                    </li>
+                    <li class = "example-set">
+                        <a class = "example-set-name">Indexes</a>
+                        <ul>
+                            <li class = "example" depends = "objectStore">
+                                <a class = "example-name">List Indexes</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.newTransactionObjectStore", function(){
+                                        DAO.newTransactionObjectStore();
+                                        write("Indexes", DAO.objectStore.indexNames);
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#index_names">
+                            </li>
+                            <li class = "example" depends = "objectStore">
+                                <a class = "example-name">Create Index</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.db", function(){
+                                        write("Changing the database version");
+                                        var request = DAO.db.setVersion(parseInt(DAO.db.version) + 1);
+                                        request.onsuccess = function(e){
+                                            write("Database version changed, now trying to create an Index");
+                                            var transaction = request.transaction;
+                                            var objectStore = transaction.objectStore("BookList");
+                                            DAO.index = objectStore.createIndex("priceIndex", "price");
+                                            write("Index created", DAO.index);
+                                        };
+                                        request.onerror = function(e){
+                                            writeError(e);
+                                        };
+                                        request.onblocked = function(e){
+                                            write("The database is open in another tab. Please close that tab");
+                                        };
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#index_create">
+                            </li>
+                            <li class = "example" depends = "objectStore" id = "index">
+                                <a class = "example-name">Open Index</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.newTransactionObjectStore", function(){
+                                        DAO.getIndex = function(){
+                                            try {
+                                                DAO.newTransactionObjectStore();
+                                                DAO.index = DAO.objectStore.index("priceIndex");
+                                            } 
+                                            catch (e) {
+                                                write("Could not open Index, create it first");
+                                                writeError(e);
+                                            }
+                                        }
+                                        DAO.getIndex();
+                                        write("Opened Index", DAO.index);
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#index_open">
+                            </li>
+                            <li class = "example" depends = "index">
+                                <a class = "example-name">Cursor on Index</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.index", function(){
+                                        write("Starting to iterate on object cursor...");
+                                        DAO.getIndex();
+                                        var cursorRequest = DAO.index.openKeyCursor();
+                                        cursorRequest.onsuccess = function(event){
+                                            var objectCursor = cursorRequest.result;
+                                            if (!objectCursor) {
+                                                return;
+                                            }
+                                            write("Indexed on price:", objectCursor.key, "Object id-", objectCursor.value);
+                                            objectCursor["continue"]();
+                                        };
+                                        request.onerror = function(event){
+                                            write("Could not open Object Store", event);
+                                        };
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#index_cursor">
+                            </li>
+                            <li class = "example" depends = "index">
+                                <a class = "example-name">Object Cursor on Index</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.index", function(){
+                                        write("Starting to iterate on object cursor...");
+                                        DAO.getIndex();
+                                        var cursorRequest = DAO.index.openCursor();
+                                        cursorRequest.onsuccess = function(event){
+                                            var objectCursor = cursorRequest.result;
+                                            if (!objectCursor) {
+                                                return;
+                                            }
+                                            write(objectCursor.key, objectCursor.value);
+                                            objectCursor["continue"]();
+                                        };
+                                        request.onerror = function(event){
+                                            write("Could not open Object Store", event);
+                                        };
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#index_objectCursor">
+                            </li>
+                            <li class = "example" depends = "objectStore">
+                                <a class = "example-name">Remove Index</a>
+                                <script type = "text/javascript">
+                                    ConsoleHelper.waitFor("DAO.db", function(){
+                                        write("Changing the version of the database");
+                                        var request = DAO.db.setVersion(parseInt(DAO.db.version) + 1);
+                                        request.onsuccess = function(e){
+                                            write("Database version change, now trying to delete the index");
+                                            var transaction = request.result;
+                                            var objectStore = transaction.objectStore("BookList");
+                                            DAO.index = objectStore.deleteIndex("priceIndex");
+                                            write("Index Deleted");
+                                        };
+                                        request.onerror = function(e){
+                                            writeError(e);
+                                        };
+                                        request.onblocked = function(e){
+                                            write("The database is open in another tab. Please close that tab");
+                                        };
+                                    });
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#index_remove">
+                            </li>
+                        </ul>
+                    </li>
+                    <li class = "example" depends = "db">
+                        <a class = "example-name">Set Version</a>
+                        <script type = "text/javascript">
+                            ConsoleHelper.waitFor("DAO.db", function(){
+                                var request = DAO.db.setVersion(parseInt(Math.random() * 100));
+                                write("Trying to change the version of the database");
+                                request.onsuccess = function(){
+                                    write("Set the version of the database to", DAO.db.version);
+                                };
+                                request.onblocked = function(e){
+                                    write("The database is open in another tab. Please close that tab");
+                                };
+                            });
+                        </script>
+                        <link class = "example-docs" href = "div#reference>div#version">
+                    </li>
+                    <li class = "example" depends = "db">
+                        <a class = "example-name">Close Database</a>
+                        <script type = "text/javascript">
+                            ConsoleHelper.waitFor("DAO.db", function(){
+                                DAO.db.close();
+                            });
+                        </script>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <div id = "reference">
+            <div id = "prereq">
+                <h3>Pre Requisites</h3>
+                <p>
+                    Firefox 4.0 implements the <a target = '_blank' href = '../firefox/Speclet_023_IDB_API_Asynchronous_APIs.html'>IndexedDB</a>
+                    as window.moz_indexedDB. The pre requisities function assigns it to the Window object. The examples here show the asynchronous API. Hence, dependencies are loaded using a ConsoleHelper.waitFor function that waits for a specific variable to get defined by examples that are required for this example to run.
+                </p>
+                <p>
+                    You can find more details about IndexedDB <a target = '_blank' href = 'http://hacks.mozilla.org/2010/06/comparing-indexeddb-and-webdatabase/'>here</a>, <a target="_blank" href = 'http://hacks.mozilla.org/2010/06/comparing-indexeddb-and-webdatabase/'>here</a>
+                    and <a target = '_blank' href = "http://hacks.mozilla.org/2010/06/beyond-html5-database-apis-and-the-road-to-indexeddb/">here</a>.
+                </p>
+                <p>
+                    If you get errors trying to run examples, make sure that you hit the "Load-Prerequisites" button at the top right. 
+                </p>
+            </div>
+            <div id = "openDatabase">
+                <h3>Open Database</h3>
+                <p>
+                    This method returns immediately and runs the following steps in a different thread. If an error occurs while the database connection is being opened, then an error event is fired on this method's returned object with its code set to UNKNOWN_ERR  and a suitable message.
+                    <ol>
+                        <li>
+                            Let origin be the origin of the active document from which the method was invoked.
+                        </li>
+                        <li>
+                            Perform the steps for opening a database, with origin, the name parameter and description parameter, and call its result as result.
+                        </li>
+                        <li>
+                            If the steps were aborted with an error code, then set this request's error with that code and abort these steps.
+                        </li>
+                        <li>
+                            Create a IDBDatabase object for result and call it db. 
+                        </li>
+                        <li>
+                            Fire a success event on this method's returned object using the IDBSuccessEvent interface with its result set to db.
+                        </li>
+                    </ol>
+                </p>
+                <p>
+                    A database object can be used to manipulate the objects of that database. That is also the only way to obtaining a transaction for that database. 
+                </p>
+                <a href = "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBFactory-open">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBFactory-open</a>
+            </div>
+            <div id = "openObjectStore">
+                <h3>Open Object Store</h3>
+                <p>
+                    Creates a new read_write transaction. Opens an object store in the read write mode. The oncomplete callback of the transaction opens anothe transaction.
+                </p>
+                <a target = "_blank" href = "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBDatabase-objectStore">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBDatabase-objectStore</a>
+            </div>
+            <div id = "createObjectStore">
+                <h3>Create Object Store</h3>
+                <p>
+                    This method creates and returns a new object store with the given name in the connected database. Note that this method must only be called from a VERSION_CHANGE transaction callback. 
+                </p>
+                <a target="_blank" href = "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBDatabase-createObjectStore">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBDatabase-createObjectStore</a>
+            </div>
+            <div id = "removeObjectStore">
+                <h3>Remove Object Store</h3>
+                <p>
+                    This method destroys the object store with the given name in the connected database as well as all indexes that are referencing that object store. Note that this method must only be called from a VERSION_CHANGE  transaction callback. 
+                </p>
+                <a target="_blank" href= "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBDatabase-removeObjectStore">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBDatabase-removeObjectStore</a>
+            </div>
+            <div id = "save">
+                <h3>Save Data</h3>
+                <p>
+                    This method returns immediately and stores the given value in this object store by following the steps for storing a record into an object store with the no-overwrite flag set. If the record can be successfully stored in the object store, then a success event is fired on this method's returned object using the IDBTransactionEvent interface with its result set to the key for the stored record and transaction set to the transaction in which this object store is opened. If a record exists in this object store for the key key parameter, then an error event is fired on this method's returned object with its code set to CONSTRAINT_ERR
+                </p>
+                <a target="_blank" href="http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-add">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-add</a>
+            </div>
+            <div id = "delete">
+                <h3>Delete data</h3>
+                <p>
+                    This method returns immediately and removes the record from this object store by following the steps for deleting a record from an object store corresponding to the given key. If a record did not exist in this object store for the key parameter, then an error event is fired on this method's returned object with its code set to NOT_FOUND_ERR  and a suitable message. If the record can be successfully removed from the object store, then a success event is fired on this method's returned object using the IDBTransactionEvent interface with its result set to the value of the removed record and transaction set to the transaction in which this object store is opened.
+                </p>
+                <a target="_blank" href= "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-remove">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-remove</a>
+            </div>
+            <div id = "modify">
+                <h3>Update data</h3>
+                <p>
+                    This method returns immediately and stores the given value in this object store by following the steps for storing a record into an object store. If the record can be successfully stored in the object store, then a success event is fired on this method's returned object using the IDBTransactionEvent interface with its result set to the key for the stored record and transaction set to the transaction in which this object store is opened.
+                </p>
+                <a target="_blank" href ="http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-put">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-put</a>
+            </div>
+            <div id = "get">
+                <h3>Get Data</h3>
+                <p>
+                    This method returns immediately and retrieves the value from this object store for the record corresponding to the given key by following the steps for retrieving a record from an object store. If the operation is successful, then the result of this object's request is set to the retrieved value. If a record did not exist in this object store for the key key parameter, then an error event is fired on this method's returned object with its code set to NOT_FOUND_ERR  and a suitable message. If the record can be successfully retrieved from the object store, then a success event is fired on this method's returned object using the IDBTransactionEvent interface with its result set to the value of the retrieved record and transaction set to the transaction in which this object store is opened.
+                </p>
+                <a target="_blank" href="http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-get">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-get</a>
+            </div>
+            <div id = "cursor">
+                <h3>Open Cursor</h3>
+                <p>
+                    This method returns immediately and creates a cursor over the records of this object store. The range of this cursor matches the key range specified as the range parameter, or if that parameter is not specified or null, then the range includes all the records. If there is even a single record that matches the key range, then a success event is fired on this method's returned object with its result set to the IDBCursor object for that cursor. If no records match the key range, then an success event is fired on this method's returned object with its result  set to null.
+                </p>
+                <p>
+                    The function defined here is used by other cursor methods.
+                </p>
+                <a target="_blank" href="http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-openCursor">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-openCursor</a>
+            </div>
+            <div id = "cursor_continue">
+                <h3>Iterate over Cursor</h3>
+                <p>
+                    This method returns immediately and advances the cursor to the next position along its direction to the item whose key matches the optional parameter. If no such parameter is provided, advance to the immediate next position. If the cursor has reached the end of its range, then an success event is fired on this method's returned object with its result  set to null.
+                </p>
+                <a target="_blank" href="http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBCursor-continue">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBCursor-continue</a>
+            </div>
+            <div id = "cursor_remove">
+                <h3>Remove Objects using Cursor</h3>
+                <p>
+                    This method returns immediately and deletes the object at the cursor's position. The cursor's position is not changed. Any attempts to retrieve the cursor's current value will return null. 
+                </p>
+                <a target="_blank" href="http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBCursor-remove">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBCursor-remove</a>
+            </div>
+            <div id = "cursor_update">
+                <h3>Update Objects using Cursor</h3>
+                <p>
+                    This method returns immediately and sets the value for the record at the cursor's position.
+                </p>
+                <a target="_blank" href="http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBCursor-update">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBCursor-update</a>
+            </div>
+            <div id = "index_names">
+                <h3>Get Index Names</h3>
+                <p>
+                    Gets all the indexes that are defined on the object store
+                </p>
+            </div>
+            <div id = "index_create">
+                <h3>Create Index</h3>
+                <p>
+                    This creates and returns a new index with the given name and parameters in the connected database. Note that this method must only be called from a VERSION_CHANGE transaction callback.
+                </p>
+                <a target="_blank" href= "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-createIndex">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-createIndex</a>
+            </div>
+            <div id = "index_objectCursor">
+                <h3>Get Object Cursor on Index</h3>
+                <p>
+                    This method returns immediately and creates a cursor over the records of this index's referenced object store as arranged by this index. The range of this cursor matches the key range specified as the range parameter, or if that parameter is not specified or null, then the range includes all the records. If there is even a single record that matches the key range, then a success event is fired on this method's returned object with its result set to the IDBCursor object for that cursor. If no records match the key range, then an error event is fired on this method's returned object with its code set to NOT_FOUND_ERR  and a suitable message.
+                </p>
+                <a target="_blank" href = "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBIndex-openObjectCursor">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBIndex-openObjectCursor</a>
+            </div>
+            <div id = "index_cursor">
+                <h3>Get Cursor on Index</h3>
+                <p>
+                    This method returns immediately and creates a cursor over the records of this index. The range of this cursor  matches the key range specified as the range parameter, or if that parameter is not specified or null, then the range includes all the records. If there is even a single record that matches the key range, then a success event is fired on this method's returned object with its result set to the IDBCursor object for that cursor. If no records match the key range, then an error event is fired on this method's returned object with its code set to NOT_FOUND_ERR  and a suitable message.
+                </p>
+                <a target="_blank" href= "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBIndex-openCursor">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBIndex-openCursor</a>
+            </div>
+            <div id = "index_open">
+                <h3>Open Index</h3>
+                <p>
+                    This method returns immediately and opens the index with the given name in the connected database. 
+                </p>
+                <a target="_blank" href = "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-index">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-index</a>
+            </div>
+            <div id = "index_remove">
+                <h3>Remove Index</h3>
+                <p>
+                    This method destroys the index with the given name in the connected database. Note that this method must only be called from a VERSION_CHANGE  transaction callback. 
+                </p>
+                <a target="_blank" href= "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-removeIndex">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBObjectStore-removeIndex</a>
+            </div>
+            <div id = "version">
+                <h3>Set Database Version</h3>
+                <p>
+                    This method returns immediately and sets the version of the connected database.
+                </p>
+                <a target="_blank" href="http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBDatabase-setVersion">http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Speclet_023_IDB_API_Asynchronous_APIs.html#widl-IDBDatabase-setVersion</a>
+            </div>
+            <div id = "getAllStores">
+                <h3>Get All objects in data store</h3>
+                <p>
+                    Gets all the object stores in the database
+                </p>
+            </div>
+            <div id = "getAllData">
+                <h3>Get All objects in data store</h3>
+                <p>
+                    Gets all the objects in the object store
+                </p>
+            </div>
+        </div>
+        <div class = "splash">
+            <h1>IndexedDB API - Webkit Browsers</h1>
+            <p style ="font-size : 1.2em">
+                The list of examples illustrate the IndexedDB API Implemented in Google Chrome 12 Canary Build and later.
+            </p>
+        </div>
+    </body>
+</html>

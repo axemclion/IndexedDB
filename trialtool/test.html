@@ -1,0 +1,115 @@
+<html>
+    <head>
+        <title>Test Page</title>
+    </head>
+    <body>
+        <div id = "console">
+        </div>
+        <script type = "text/javascript">
+        function Include_BootLib(){
+            if (!window.indexedDB) {
+                window.indexedDB = new ActiveXObject("SQLCE.Factory.4.0");
+                window.indexedDBSync = new ActiveXObject("SQLCE.FactorySync.4.0");
+                
+                if (window.JSON) {
+                    window.indexedDB.json = window.JSON;
+                    window.indexedDBSync.json = window.JSON;
+                }
+                else {
+                    var jsonObject = {
+                        parse: function(txt){
+                            if (txt === "[]") 
+                                return [];
+                            if (txt === "{}") 
+                                return {};
+                            throw {
+                                message: "Unrecognized JSON to parse: " + txt
+                            };
+                        }
+                    };
+                    window.indexedDB.json = jsonObject;
+                    window.indexedDBSync.json = jsonObject;
+                    
+                }
+                
+                // Add some interface-level constants and methods.
+                window.IDBDatabaseException = {
+                    UNKNOWN_ERR: 0,
+                    NON_TRANSIENT_ERR: 1,
+                    NOT_FOUND_ERR: 2,
+                    CONSTRAINT_ERR: 3,
+                    DATA_ERR: 4,
+                    NOT_ALLOWED_ERR: 5,
+                    SERIAL_ERR: 11,
+                    RECOVERABLE_ERR: 21,
+                    TRANSIENT_ERR: 31,
+                    TIMEOUT_ERR: 32,
+                    DEADLOCK_ERR: 33
+                };
+                
+                window.IDBKeyRange = {
+                    SINGLE: 0,
+                    LEFT_OPEN: 1,
+                    RIGHT_OPEN: 2,
+                    LEFT_BOUND: 4,
+                    RIGHT_BOUND: 8
+                };
+                
+                window.IDBRequest = {
+                    INITIAL: 0,
+                    LOADING: 1,
+                    DONE: 2
+                }
+                
+                window.IDBKeyRange.only = function(value){
+                    return window.indexedDB.range.only(value);
+                };
+                
+                window.IDBKeyRange.leftBound = function(bound, open){
+                    return window.indexedDB.range.leftBound(bound, open);
+                };
+                
+                window.IDBKeyRange.rightBound = function(bound, open){
+                    return window.indexedDB.range.rightBound(bound, open);
+                };
+                
+                window.IDBKeyRange.bound = function(left, right, openLeft, openRight){
+                    return window.indexedDB.range.bound(left, right, openLeft, openRight);
+                };
+            }
+        }
+        </script>
+        <script>
+            function start(){
+                Include_BootLib();
+                var DAO = {};
+                console.log("Trying to open database ...");
+                var request = window.indexedDB.open("BookShop");
+                request.onsuccess = function(event){
+                    DAO.db = event.result;
+                    DAO.transaction = DAO.db.transaction([], 0);
+                    DAO.transaction.oncomplete = DAO.transaction.onabort = function(){
+                        console.log("Transaction Done");
+                        DAO.db.close();
+                    };
+                    DAO.objectStore = DAO.transaction.objectStore("BookList");
+                    
+                    var req = DAO.objectStore.add({
+                        "a": 1,
+                        "b": 2
+                    });
+                    req.onsuccess = function(){
+                        console.log("Done");
+                        DAO.transaction.commit();
+                    }
+                    req.onerror = function(){
+                        console.log("ERR");
+                    }
+                };
+                request.onerror = function(e){
+                    console.error(e);
+                };
+            }
+        </script>
+    </body>
+</html>
