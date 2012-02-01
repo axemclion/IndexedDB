@@ -5,110 +5,114 @@
     <body>
         <div id = "console">
         </div>
-        <script type = "text/javascript">
-        function Include_BootLib(){
-            if (!window.indexedDB) {
-                window.indexedDB = new ActiveXObject("SQLCE.Factory.4.0");
-                window.indexedDBSync = new ActiveXObject("SQLCE.FactorySync.4.0");
-                
-                if (window.JSON) {
-                    window.indexedDB.json = window.JSON;
-                    window.indexedDBSync.json = window.JSON;
-                }
-                else {
-                    var jsonObject = {
-                        parse: function(txt){
-                            if (txt === "[]") 
-                                return [];
-                            if (txt === "{}") 
-                                return {};
-                            throw {
-                                message: "Unrecognized JSON to parse: " + txt
-                            };
-                        }
-                    };
-                    window.indexedDB.json = jsonObject;
-                    window.indexedDBSync.json = jsonObject;
-                    
-                }
-                
-                // Add some interface-level constants and methods.
-                window.IDBDatabaseException = {
-                    UNKNOWN_ERR: 0,
-                    NON_TRANSIENT_ERR: 1,
-                    NOT_FOUND_ERR: 2,
-                    CONSTRAINT_ERR: 3,
-                    DATA_ERR: 4,
-                    NOT_ALLOWED_ERR: 5,
-                    SERIAL_ERR: 11,
-                    RECOVERABLE_ERR: 21,
-                    TRANSIENT_ERR: 31,
-                    TIMEOUT_ERR: 32,
-                    DEADLOCK_ERR: 33
-                };
-                
-                window.IDBKeyRange = {
-                    SINGLE: 0,
-                    LEFT_OPEN: 1,
-                    RIGHT_OPEN: 2,
-                    LEFT_BOUND: 4,
-                    RIGHT_BOUND: 8
-                };
-                
-                window.IDBRequest = {
-                    INITIAL: 0,
-                    LOADING: 1,
-                    DONE: 2
-                }
-                
-                window.IDBKeyRange.only = function(value){
-                    return window.indexedDB.range.only(value);
-                };
-                
-                window.IDBKeyRange.leftBound = function(bound, open){
-                    return window.indexedDB.range.leftBound(bound, open);
-                };
-                
-                window.IDBKeyRange.rightBound = function(bound, open){
-                    return window.indexedDB.range.rightBound(bound, open);
-                };
-                
-                window.IDBKeyRange.bound = function(left, right, openLeft, openRight){
-                    return window.indexedDB.range.bound(left, right, openLeft, openRight);
-                };
-            }
-        }
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js" type="text/javascript">
         </script>
-        <script>
-            function start(){
-                Include_BootLib();
-                var DAO = {};
-                console.log("Trying to open database ...");
-                var request = window.indexedDB.open("BookShop");
-                request.onsuccess = function(event){
-                    DAO.db = event.result;
-                    DAO.transaction = DAO.db.transaction([], 0);
-                    DAO.transaction.oncomplete = DAO.transaction.onabort = function(){
-                        console.log("Transaction Done");
-                        DAO.db.close();
-                    };
-                    DAO.objectStore = DAO.transaction.objectStore("BookList");
-                    
-                    var req = DAO.objectStore.add({
-                        "a": 1,
-                        "b": 2
-                    });
-                    req.onsuccess = function(){
-                        console.log("Done");
-                        DAO.transaction.commit();
-                    }
-                    req.onerror = function(){
-                        console.log("ERR");
-                    }
-                };
-                request.onerror = function(e){
-                    console.error(e);
-                };
+        <script type = "text/javascript" src = "/trialtool/js/ConsoleHelper.js">
+        </script>
+        <script type = "text/javascript">
+            function axe(){
+            	/*Pre Requisites*/
+            	
+            	// Initialising the window.IndexedDB Object
+            	window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
+            	window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
+            	window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+            	var DAO = DAO || {};
+            	
+            	
+            	
+            	/*Open DB with version+1*/
+            	
+            	var version = 1;
+            	var db = null;
+            	document.write("Trying to open database with version", version);
+            	try {
+            		var dbOpenRequest = window.indexedDB.open("BookShop1", version);
+            		dbOpenRequest.onsuccess = function(event){
+            			db = dbOpenRequest.result;
+            			DAO.version = db.version;
+            			db.onversionchange = function(e){
+            				write("Version change triggered, so closing database connection", e.oldVersion, e.newVersion, db);
+            				db.close();
+            			};
+            			write("Database Opened", db, event);
+            			/* Code for ${db.open} */
+            		};
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			write("Database upgrade needed");
+            			var db = dbOpenRequest.result;
+            			
+            			write("Changing the database version");
+            			// db has been initialized elsewhere                                    
+            			try {
+            				var objectStore = db.createObjectStore("ObjectStore_BookList", {
+            					"keyPath": "id",
+            					"autoIncrement": true
+            				});
+            				write("Object Store created", objectStore);
+            			} catch (e) {
+            				writeError(e);
+            			}
+            			
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			write("DB Open Request Error");
+            		};
+            		dbOpenRequest.onblocked = function(e){
+            			write("DB Open Request Blocked");
+            		};
+            	} catch (e) {
+            		writeError(e);
+            	}
+            }
+            
+            function axe1(){
+            	/*Pre Requisites*/
+            	
+            	// Initialising the window.IndexedDB Object
+            	window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB;
+            	window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
+            	window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+            	var DAO = DAO || {};
+            	
+            	/*Open DB with version+1*/
+            	
+            	var version = 2;
+            	var db = null;
+            	document.write("Trying to open database with version", version);
+            	try {
+            		var dbOpenRequest = window.indexedDB.open("BookShop1", version);
+            		dbOpenRequest.onsuccess = function(event){
+            			db = dbOpenRequest.result;
+            			DAO.version = db.version;
+            			db.onversionchange = function(e){
+            				write("Version change triggered, so closing database connection", e.oldVersion, e.newVersion);
+            				db.close();
+            			};
+            			write("Database Opened", db, event);
+            			/* Code for ${db.open} */
+            		};
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			write("Database upgrade needed");
+            			var db = dbOpenRequest.result;
+            			
+            			write("Changing the database version");
+            			// db has been initialized elsewhere                                    
+            			
+            			write("Database version changed, now trying to create an Index");
+            			var objectStore = dbOpenRequest.transaction.objectStore("ObjectStore_BookList");
+            			DAO.index = objectStore.createIndex("priceIndex", "price");
+            			write("Index created", DAO.index);
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			write("DB Open Request Error");
+            		};
+            		dbOpenRequest.onblocked = function(e){
+            			write("DB Open Request Blocked");
+            		};
+            	} catch (e) {
+            		writeError(e);
+            	}
             }
         </script>
     </body>
