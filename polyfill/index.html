@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <title>Testing IndexedDB Shim</title>
+    </head>
+    <body>
+        <script src = "indexeddb.sqlshim.js">
+        </script>
+        <script type = "text/javascript">
+            var idbRequest = window.indexedDB.open("sample", 1);
+            idbRequest.onsuccess = function(e){
+            	console.log("IDB Request Success", idbRequest, e);
+            	var db = idbRequest.result;
+            	var transaction = db.transaction(["ObjectStore1"], IDBTransaction.READ_WRITE);
+            	var objectStore = transaction.objectStore("ObjectStore1");
+            	objectStore.put(sample.obj());
+            };
+            idbRequest.onerror = function(e){
+            	console.log("IDB Request Failed", idbRequest, e);
+            };
+            
+            idbRequest.onupgradeneeded = function(e){
+            	console.log("IDB Transaction Upgrade needed", idbRequest, e);
+            	var db = idbRequest.result;
+            	db.createObjectStore("ObjectStore1", {
+            		"keyPath": "id",
+            		"autoIncrement": true
+            	});
+            };
+        </script>
+    </body>
+</html>
