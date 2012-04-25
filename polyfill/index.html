@@ -1,31 +1,153 @@
 <html>
     <head>
         <title>Testing IndexedDB Shim</title>
-    </head>
-    <body>
-        <script src = "indexeddb.sqlshim.js">
+        <link rel="stylesheet" href="http://code.jquery.com/qunit/git/qunit.css" type="text/css" media="screen" />
+        <script type="text/javascript" src="http://code.jquery.com/qunit/git/qunit.js">
         </script>
         <script type = "text/javascript">
-            var idbRequest = window.indexedDB.open("sample", 1);
-            idbRequest.onsuccess = function(e){
-            	console.log("IDB Request Success", idbRequest, e);
-            	var db = idbRequest.result;
-            	var transaction = db.transaction(["ObjectStore1"], IDBTransaction.READ_WRITE);
-            	var objectStore = transaction.objectStore("ObjectStore1");
-            	objectStore.put(sample.obj());
-            };
-            idbRequest.onerror = function(e){
-            	console.log("IDB Request Failed", idbRequest, e);
+            function _(msg){
+            	console.log("[" + QUnit.config.current.module + ":" + QUnit.config.current.testName + "]", msg, arguments.callee.caller.arguments);
+            }
+        </script>
+        <script type = "text/javascript">
+            window.indexedDB = null//window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+            if (!window.indexedDB) {
+            	var x = document.createElement("script");
+            	x.src = "indexeddb.sqlshim.js";
+            	document.head.appendChild(x);
+            } else {
+            	alert("Native IndexedDB Implementation found, so using it");
+            }
+        </script>
+        <script type = "text/javascript" src= "sampleData.js">
+        </script>
+        <script type = "text/javascript">
+            function startTests(){
+            	console.log("Starting Tests");
+            	var deleteReq = window.indexedDB.deleteDatabase(DB.NAME);
+            	deleteReq.onsuccess = function(){
+            		console.log("Database deleted");
+            		startQUnitTests();
+            	};
+            	deleteReq.onerror = function(e){
+            		console.log("Could not delete database");
+            	};
             };
             
-            idbRequest.onupgradeneeded = function(e){
-            	console.log("IDB Transaction Upgrade needed", idbRequest, e);
-            	var db = idbRequest.result;
-            	db.createObjectStore("ObjectStore1", {
-            		"keyPath": "id",
-            		"autoIncrement": true
+            function startQUnitTests(){
+            	module("Database");
+            	asyncTest("Opening a Database without version", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
+            		dbOpenRequest.onsuccess = function(e){
+            			ok(true, "Database Opened successfully");
+            			_("Database opened successfully");
+            			start();
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            		};
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			ok(true, "Database Upgraded successfully");
+            			_("Database upgrade called");
+            			start();
+            			stop();
+            		};
+            	});
+            	
+            	asyncTest("Opening a database with a version", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, 2);
+            		dbOpenRequest.onsuccess = function(e){
+            			ok(true, "Database Opened successfully");
+            			_("Database opened successfully with version");
+            			start();
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            		};
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			ok(true, "Database Upgraded successfully");
+            			_("Database upgrade called");
+            		};
+            	});
+            	
+            	module("Object Store");
+            	asyncTest("Creating an Object Store", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, 2);
+            		dbOpenRequest.onsuccess = function(e){
+            			ok(true, "Database Opened successfully");
+            			_("Database opened successfully with version");
+            			start();
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            		};
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			ok(true, "Database Upgraded successfully");
+            			_("Database upgrade called");
+            			var db = dbOpenRequest.result;
+            			db.createObjectStore(DB.OBJECT_STORE_1);
+            			db.createObjectStore(DB.OBJECT_STORE_2, {
+            				"keyPath": "id",
+            				"autoIncrement": true
+            			});
+            			db.createObjectStore(DB.OBJECT_STORE_3, {
+            				"autoIncrement": true
+            			});
+            			db.createObjectStore(DB.OBJECT_STORE_4, {
+            				"keyPath": "id"
+            			});
+            			equal(db.objectStoreNames.length, 4, "Count of Object Stores created is correct");
+            			_(db.objectStoreNames);
+            			start();
+            			stop();
+            		};
+            	});
+            	
+            	asyncTest("Deleting an Object Store", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, 2);
+            		dbOpenRequest.onsuccess = function(e){
+            			ok(true, "Database Opened successfully");
+            			_("Database opened successfully with version");
+            			start();
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            		};
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			ok(true, "Database Upgraded successfully, now trying to delete the database");
+            			_("Database upgrade called");
+            			var db = dbOpenRequest.result;
+            			var len = db.objectStoreNames.length;
+            			db.createObjectStore(DB.OBJECT_STORE_4, {
+            				"keyPath": "id"
+            			});
+            			db.deleteObjectStore(DB.OBJECT_STORE_4);
+            			equal(db.objectStoreNames.indexOf(DB.OBJECT_STORE_4), -1, "Database does not contain Object Store 4");
+            			start();
+            			stop();
+            		};
             	});
             };
         </script>
+    </head>
+    <body onload ="startTests()">
+        <h1 id="qunit-header">Jquery IndexedDB Tests</h1>
+        <h2 id="qunit-banner"></h2>
+        <div id="qunit-testrunner-toolbar">
+        </div>
+        <h2 id="qunit-userAgent"></h2>
+        <ol id="qunit-tests">
+        </ol>
+        <div id="qunit-fixture">
+            test markup, will be hidden
+        </div>
     </body>
 </html>

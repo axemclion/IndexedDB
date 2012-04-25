@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <a href = "javascript:axe()">Run Code</a>
+        <script type = "text/javascript" src = "indexeddb.sqlshim.js">
+        </script>
+        <script type = "text/javascript" src = "sampleData.js">
+        </script>
+        <script type = "text/javascript">
+            function _(msg){
+            	console.log(msg, arguments.callee.caller.arguments);
+            }
+            
+            var db = window.openDatabase("sampleDB", 1, "Sample Database", 10000);
+            db.transaction(function(tx){
+            	tx.executeSql("Drop table obj1");
+            	tx.executeSql("Create table obj1 (key PRIMARY KEY INTEGER AUTOINCREMENT NOT NULL UNIQUE, value varchar(200))", [], function(){
+            		console.log("Success", this, arguments);
+            	}, function(){
+            		console.log("Error", this, arguments);
+            	})
+            });
+        </script>
+    </body>
+</html>
