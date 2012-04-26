@@ -86,10 +86,68 @@ window.indexedDB = (function(window, undefined){
 	 */
 	var IDBTransaction = function(storeNames, mode, db){
 		this.mode = mode;
-		this.storeNames = storeNames;
+		this.storeNames = typeof storeNames === "string" ? [storeNames] : storeNames;
+		for (var i = 0; i < this.storeNames.length; i++) {
+			if (db.objectStoreNames.indexOf(storeNames[i]) === -1) {
+				throwDOMException(0, "The operation failed because the requested database object could not be found. For example, an object store did not exist but was being opened.", storeNames);
+			}
+		}
+		this.__closePending = null;
+		this.__active = true;
+		this.__requests = [];
+		this.__aborted = false;
+		var me = this;
+		window.setTimeout(function(){
+			!me.__active && throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished", me.__active);
+			me.db.transaction(function(tx){
+				me.__tx = tx;
+				try {
+					(function executeRequest(i){
+						if (i >= me.__requests.length) {
+							// All requests in the transaction is done
+							me.__active = false;
+							return;
+						}
+						var q = me.__requests(i)
+						q.op(q["args"], {
+							"success": function(res, e){
+								q.req.readyState = "done";
+								q.result = res
+								delete q.req.error;
+								callback("onsuccess", q.req, [e]);
+								executeRequest(i + 1)
+							},
+							"error": function(){
+							
+							}
+						});
+					}(me.__requests[0]));
+				} catch (e) {
+				
+				}
+			}, function(){
+				// Error callback
+			}, function(){
+				// Transaction completed
+			});
+			
+			me.__active = false;
+		}, 1);
 		this.db = db;
 		this.error = null;
 		this.onabort = this.onerror = this.oncomplete = null;
+	};
+	
+	IDBTransaction.prototype.__addToTransactionQueue = function(callback, args){
+		!this.__active && throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished.", this.__active);
+		var request = new IDBRequest;
+		request.source = this.db;
+		this.__requests.push({
+			"op": callback,
+			"args": args,
+			"req": request
+		});
+		return request;
 	};
 	
 	IDBTransaction.prototype.objectStore = function(objectStoreName){
@@ -97,7 +155,8 @@ window.indexedDB = (function(window, undefined){
 	};
 	
 	IDBTransaction.prototype.abort = function(){
-	
+		!me.__active && throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished", me.__active);
+		
 	};
 	
 	window.IDBTransaction = window.IDBTransaction || {};
@@ -117,17 +176,32 @@ window.indexedDB = (function(window, undefined){
 		this.__ready = (typeof ready === "undefined") ? true : false;
 	};
 	
+	/**
+	 * Gets (and optionally caches) the properties like keyPath, autoincrement, etc for this objectStore
+	 * @param {Object} callback
+	 */
 	IDBObjectStore.prototype.__getStoreProps = function(callback){
 		var me = this;
-		this.transaction.db.__db.transaction(function(tx){
-			tx.executeSql("SELECT * FROM __sys__ where name = ?", [me.name], function(tx, data){
-				callback(data.rows.item(0));
-			}, function(){
-				callback();
+		if (me.__storeProps) {
+			callback(me.__storeProps);
+		} else {
+			this.transaction.db.__db.transaction(function(tx){
+				tx.executeSql("SELECT * FROM __sys__ where name = ?", [me.name], function(tx, data){
+					me.__storeProps = data.rows.item(0)
+					callback(me.__storeProps);
+				}, function(){
+					callback();
+				});
 			});
-		});
+		}
 	};
 	
+	/**
+	 * From the store properties and object, extracts the value for the key in hte object Store
+	 * @param {Object} props
+	 * @param {Object} value
+	 * @param {Object} key
+	 */
 	IDBObjectStore.prototype.__getKey = function(props, value, key){
 		if (!props) throwDOMException(0, "Data Error - Could not locate defination for this table", props);
 		if (!props.keyPath && !key) throwDOMException(0, "Data Error - keyPath was defined as null, but a key was provided", props);
@@ -141,14 +215,26 @@ window.indexedDB = (function(window, undefined){
 		}
 	};
 	
-	IDBObjectStore.prototype.put = function(value, key){
-		var idbRequest = new IDBRequest();
-		var e = new Event();
+	/**
+	 * Checks if an insert is allowed in this object
+	 * @param {Object} props
+	 * @param {Object} value
+	 * @param {Object} key
+	 */
+	IDBObjectStore.prototype.__getKey = function(props, value, key){
+		//TODO Check insert constraints
+	}
+	
+	IDBObjectStore.prototype.add = function(value, key){
 		var me = this;
-		this.__getStoreProps(function(props){
-			me.__checkInsert(props, value, key);
-			me.transaction.db.__db.transaction(function(tx){
-				tx.executeSql("")
+		return me.transaction.__addToTransactionQueue(function(tx, args){
+			this.__getStoreProps(function(props){
+				me.__checkInsert(props, value, key);
+				tx.executeSql(function(){
+				
+				}, function(){
+				
+				});
 			});
 		});
 	};
@@ -221,8 +307,8 @@ window.indexedDB = (function(window, undefined){
 	};
 	
 	IDBDatabase.prototype.transaction = function(storeNames, mode){
-		this.transaction = new IDBTransaction(storeNames, mode, this);
-		return this.transaction;
+		var transaction = new IDBTransaction(storeNames, mode, this);
+		return transaction;
 	};
 	
 	return {

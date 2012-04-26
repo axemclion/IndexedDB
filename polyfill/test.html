@@ -9,19 +9,33 @@
         <script type = "text/javascript" src = "sampleData.js">
         </script>
         <script type = "text/javascript">
-            function _(msg){
-            	console.log(msg, arguments.callee.caller.arguments);
-            }
-            
-            var db = window.openDatabase("sampleDB", 1, "Sample Database", 10000);
-            db.transaction(function(tx){
-            	tx.executeSql("Drop table obj1");
-            	tx.executeSql("Create table obj1 (key PRIMARY KEY INTEGER AUTOINCREMENT NOT NULL UNIQUE, value varchar(200))", [], function(){
-            		console.log("Success", this, arguments);
-            	}, function(){
-            		console.log("Error", this, arguments);
-            	})
-            });
+        function _(msg){
+        	console.log(msg, arguments.callee.caller.arguments);
+        }
+        
+        function a(tx){
+        	tx.executeSql("INSERT INTO obj1 (value) values ('Sample" + Math.random() + "')", [], function(){
+        		console.log("Added value");
+        	}, function(){
+        		console.log("Error", this, arguments);
+        	});
+        }
+        
+        function b(tx){
+        	//throw "Aborting transaction";
+        }
+        
+        var db = window.openDatabase("sampleDB", 1, "Sample Database", 10000);
+        db.transaction(function(tx){
+        	a(tx);
+        	console.log("A completed");
+			b(tx);
+			console.log("B completed");
+        }, function(){
+			console.log("Error Callback")
+		}, function(){
+			console.log("SUccess callback");
+		});
         </script>
     </body>
 </html>
