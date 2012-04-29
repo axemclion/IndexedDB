@@ -1,28 +1,24 @@
 <html>
     <head>
         <title>Testing IndexedDB Shim</title>
-        <link rel="stylesheet" href="http://code.jquery.com/qunit/git/qunit.css" type="text/css" media="screen" />
-        <script type="text/javascript" src="http://code.jquery.com/qunit/git/qunit.js">
+        <link rel="stylesheet" href="/qunit/qunit.css" type="text/css" media="screen" />
+        <script type="text/javascript" src="/qunit/qunit.js">
         </script>
         <script type = "text/javascript">
             function _(msg){
             	console.log("[" + QUnit.config.current.module + ":" + QUnit.config.current.testName + "]", msg, arguments.callee.caller.arguments);
             }
         </script>
-        <script type = "text/javascript">
-            window.indexedDB = null//window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-            if (!window.indexedDB) {
-            	var x = document.createElement("script");
-            	x.src = "indexeddb.sqlshim.js";
-            	document.head.appendChild(x);
-            } else {
-            	alert("Native IndexedDB Implementation found, so using it");
-            }
-        </script>
         <script type = "text/javascript" src= "sampleData.js">
+        </script>
+        <script type = "text/javascript" src= "src/build.js">
         </script>
         <script type = "text/javascript">
             function startTests(){
+            	buildIndexedDB(runTests);
+            }
+            
+            function runTests(){
             	console.log("Starting Tests");
             	var deleteReq = window.indexedDB.deleteDatabase(DB.NAME);
             	deleteReq.onsuccess = function(){
@@ -31,7 +27,7 @@
             	};
             	deleteReq.onerror = function(e){
             		console.log("Could not delete database");
-					startQUnitTests();
+            		startQUnitTests();
             	};
             };
             
@@ -137,31 +133,6 @@
             		};
             	});
             	
-            	module("Transactions")
-            	asyncTest("Put object in a transaction", function(){
-            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
-            		dbOpenRequest.onsuccess = function(e){
-            			ok(true, "Database Opened successfully");
-            			var db = dbOpenRequest.result;
-            			var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2]);
-            			var objectStore = transaction.objectStore(DB.OBJECT_STORE_1);
-            			var addReq = objectStore.add(sample.obj());
-            			addReq.onsuccess = function(){
-            			
-            			};
-            			addReq.onerror = function(){
-            			
-            			};
-            			
-            			_("Database opened successfully with version");
-            			start();
-            		};
-            		dbOpenRequest.onerror = function(e){
-            			ok(false, "Database NOT Opened successfully");
-            			_("Database NOT opened successfully");
-            			start();
-            		};
-            	});
             };
         </script>
     </head>

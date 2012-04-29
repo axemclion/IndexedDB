@@ -97,9 +97,15 @@ window.indexedDB = (function(window, undefined){
 		this.__requests = [];
 		this.__aborted = false;
 		var me = this;
+		this.db = db;
+		this.error = null;
+		this.onabort = this.onerror = this.oncomplete = null;
+	};
+	
+	IDBTransaction.prototype.__executeRequests = function(){
 		window.setTimeout(function(){
 			!me.__active && throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished", me.__active);
-			me.db.transaction(function(tx){
+			me.db.__db.transaction(function(tx){
 				me.__tx = tx;
 				try {
 					(function executeRequest(i){
@@ -109,7 +115,7 @@ window.indexedDB = (function(window, undefined){
 							return;
 						}
 						var q = me.__requests(i)
-						q.op(q["args"], {
+						q.op(tx, q["args"], {
 							"success": function(res, e){
 								q.req.readyState = "done";
 								q.result = res
@@ -133,10 +139,7 @@ window.indexedDB = (function(window, undefined){
 			
 			me.__active = false;
 		}, 1);
-		this.db = db;
-		this.error = null;
-		this.onabort = this.onerror = this.oncomplete = null;
-	};
+	}
 	
 	IDBTransaction.prototype.__addToTransactionQueue = function(callback, args){
 		!this.__active && throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished.", this.__active);
@@ -255,39 +258,40 @@ window.indexedDB = (function(window, undefined){
 	};
 	
 	IDBDatabase.prototype.createObjectStore = function(storeName, createOptions){
+		var me = this;
 		createOptions = createOptions || {};
 		createOptions.keyPath = createOptions.keyPath || null;
-		function error(){
-			throwDOMException(0, "Could not create new database", arguments);
-		}
-		var me = this;
-		if (me.transaction && me.transaction.mode !== 2) {
-			throwDOMException(0, "Invalid State error", me.transaction);
-		}
-		
 		var result = new IDBObjectStore(storeName, me.transaction, false);
-		// Should not push here. Pushing here does not gurantee that it was correct
-		me.objectStoreNames.push(storeName);
 		
-		me.__db.transaction(function(tx){
+		var transaction = new IDBTransaction([], 2, me);
+		transaction.__addToTransactionQueue(function(tx, args, success, failure){
+			function error(){
+				throwDOMException(0, "Could not create new database", arguments);
+			}
+			
+			if (me.transaction && me.transaction.mode !== 2) {
+				throwDOMException(0, "Invalid State error", me.transaction);
+			}
 			//key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE
 			var sql = ["CREATE TABLE", storeName, "(key", createOptions.autoIncrement ? "INTEGER" : "VARCHAR(255)", "PRIMARY KEY", createOptions.autoIncrement ? "AUTOINCREMENT" : "", " NOT NULL UNIQUE , value VARCHAR(10000))"].join(" ");
 			//console.log(sql);
 			tx.executeSql(sql, [], function(tx, data){
 				tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false], function(){
 					result.__ready = true;
+					success();
 				}, error);
 			}, error);
 		});
 		
 		// The IndexedDB Specification needs us to return an Object Store immediatly, but WebSQL does not create and return the store immediatly
 		// Hence, this can technically be unusable, and we hack around it, by setting the ready value to false
+		me.objectStoreNames.push(storeName);
 		return result;
 	};
 	
 	IDBDatabase.prototype.deleteObjectStore = function(storeName){
 		var error = function(){
-			throwDOMException(0, "Could not create new database", arguments);
+			throwDOMException(0, "Could not delete ObjectStore", arguments);
 		}
 		var me = this;
 		if (me.transaction && me.transaction.mode !== 2) {
@@ -405,7 +409,7 @@ window.indexedDB = (function(window, undefined){
 								sysdb.transaction(function(systx){
 									systx.executeSql("UPDATE dbVersions set version = ? where name = ?", [version, name], function(){
 										e.oldVersion = oldVersion, e.newVersion = version;
-										req.result.transaction([], 2);
+										req.result.transaction = new IDBTransaction([], 2, req.source);
 										callback("onupgradeneeded", req, [e]);
 										req.result.transaction = null;
 										callback("onsuccess", req, [e]);
