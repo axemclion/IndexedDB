@@ -18,20 +18,25 @@
             	buildIndexedDB(runTests);
             }
             
-            function runTests(){
-            	console.log("Starting Tests");
+            function deleteDB(callback){
             	var deleteReq = window.indexedDB.deleteDatabase(DB.NAME);
             	deleteReq.onsuccess = function(){
             		console.log("Database deleted");
-            		startQUnitTests();
+            		callback();
             	};
             	deleteReq.onerror = function(e){
             		console.log("Could not delete database");
-            		startQUnitTests();
+            		callback();
             	};
+            }
+            
+            function runTests(){
+            	console.log("Starting Tests");
+            	deleteDB(startQUnitTests);
             };
             
             function startQUnitTests(){
+            	var dbVersion = 1;
             	module("Database");
             	asyncTest("Opening a Database without version", function(){
             		var dbOpenRequest = window.indexedDB.open(DB.NAME);
@@ -46,7 +51,7 @@
             			start();
             		};
             		dbOpenRequest.onupgradeneeded = function(e){
-            			ok(true, "Database Upgraded successfully");
+            			ok(false, "Database upgrade should not be called");
             			_("Database upgrade called");
             			start();
             			stop();
@@ -54,7 +59,7 @@
             	});
             	
             	asyncTest("Opening a database with a version", function(){
-            		var dbOpenRequest = window.indexedDB.open(DB.NAME, 2);
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
             		dbOpenRequest.onsuccess = function(e){
             			ok(true, "Database Opened successfully");
             			_("Database opened successfully with version");
@@ -73,7 +78,7 @@
             	
             	module("Object Store");
             	asyncTest("Creating an Object Store", function(){
-            		var dbOpenRequest = window.indexedDB.open(DB.NAME, 2);
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
             		dbOpenRequest.onsuccess = function(e){
             			ok(true, "Database Opened successfully");
             			_("Database opened successfully with version");
@@ -107,7 +112,7 @@
             	});
             	
             	asyncTest("Deleting an Object Store", function(){
-            		var dbOpenRequest = window.indexedDB.open(DB.NAME, 2);
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
             		dbOpenRequest.onsuccess = function(e){
             			ok(true, "Database Opened successfully");
             			_("Database opened successfully with version");
@@ -132,7 +137,6 @@
             			stop();
             		};
             	});
-            	
             };
         </script>
     </head>

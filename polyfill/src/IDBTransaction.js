@@ -16,6 +16,7 @@
 			}
 		}
 		this.__active = true;
+		this.__running = false;
 		this.__requests = [];
 		this.__aborted = false;
 		this.db = db;
@@ -25,6 +26,10 @@
 	};
 	
 	IDBTransaction.prototype.__executeRequests = function(){
+		if (this.__running) {
+			return;
+		}
+		this.__running = true;
 		var me = this;
 		window.setTimeout(function(){
 			!me.__active && modules.util.throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished", me.__active);

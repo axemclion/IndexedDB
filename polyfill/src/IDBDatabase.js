@@ -24,7 +24,7 @@
 		var transaction = me.__versionTransaction;
 		transaction.__addToTransactionQueue(function(tx, args, success, failure){
 			function error(){
-				modules.util.throwDOMException(0, "Could not create new database", arguments);
+				modules.util.throwDOMException(0, "Could not create new object store", arguments);
 			}
 			
 			if (!me.__versionTransaction) {
@@ -52,15 +52,20 @@
 			modules.util.throwDOMException(0, "Could not delete ObjectStore", arguments);
 		}
 		var me = this;
-		if (me.transaction && me.transaction.mode !== 2) {
-			modules.util.throwDOMException(0, "Invalid State error", me.transaction);
-		}
+		me.objectStoreNames.indexOf(storeName) === -1 && error("Object Store does not exist");
 		me.objectStoreNames.splice(me.objectStoreNames.indexOf(storeName), 1);
-		me.__db.transaction(function(tx){
-			tx.executeSql("DROP TABLE " + storeName, [], function(){
-				tx.executeSql("DELETE FROM __sys__ WHERE name = ?", [storeName], function(){
+		
+		var transaction = me.__versionTransaction;
+		transaction.__addToTransactionQueue(function(tx, args, success, failure){
+			if (!me.__versionTransaction) {
+				modules.util.throwDOMException(0, "Invalid State error", me.transaction);
+			}
+			me.__db.transaction(function(tx){
+				tx.executeSql("DROP TABLE " + storeName, [], function(){
+					tx.executeSql("DELETE FROM __sys__ WHERE name = ?", [storeName], function(){
+					}, error);
 				}, error);
-			}, error);
+			});
 		});
 	};
 	
