@@ -6,7 +6,7 @@
         </script>
         <script type = "text/javascript">
             function _(msg){
-            	console.log("[" + QUnit.config.current.module + ":" + QUnit.config.current.testName + "]", msg, arguments.callee.caller.arguments);
+            	console.log(msg, arguments.callee.caller.arguments);
             }
         </script>
         <script type = "text/javascript" src= "sampleData.js">
@@ -15,12 +15,17 @@
         </script>
         <script type = "text/javascript">
             // Ideally unit tests should be independentdent, but cant have it in this case, dont wanna write so much code
-            var testQueue = [];
+            var testQueue = [], currentModule = null;
             function queuedAsyncTest(name, callback){
             	testQueue.push({
             		"name": name,
-            		"callback": callback
+            		"callback": callback,
+            		"module": currentModule
             	});
+            }
+            
+            function queuedModule(module){
+            	currentModule = module;
             }
             
             function nextTest(){
@@ -30,7 +35,8 @@
             	}
             	var current = testQueue.splice(0, 1)[0];
             	console.groupEnd();
-				console.group("=========");
+            	console.group("=========", current.module, ":", current.name, "============");
+            	module(current.module);
             	asyncTest(current.name, current.callback);
             	
             }
@@ -58,7 +64,7 @@
             };
             
             var dbVersion = 1;
-            module("Database");
+            queuedModule("Database");
             queuedAsyncTest("Opening a Database without version", function(){
             	var dbOpenRequest = window.indexedDB.open(DB.NAME);
             	dbOpenRequest.onsuccess = function(e){
@@ -101,7 +107,7 @@
             	};
             });
             
-            //module("Object Store");
+            queuedModule("Object Store");
             queuedAsyncTest("Creating an Object Store", function(){
             	var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
             	dbOpenRequest.onsuccess = function(e){
@@ -161,6 +167,35 @@
             		equal(db.objectStoreNames.indexOf(DB.OBJECT_STORE_4), -1, "Database does not contain Object Store 4");
             		start();
             		stop();
+            	};
+            });
+            
+            queuedModule("Transactions");
+            queuedAsyncTest("Simple Transaction", function(){
+            	var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
+            	dbOpenRequest.onsuccess = function(e){
+            		ok(true, "Database Opened successfully");
+            		var db = dbOpenRequest.result;
+            		var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
+            		var objectStore1 = transaction.objectStore(DB.OBJECT_STORE_1);
+            		var key = sample.integer();
+            		var addReq = objectStore1.add(sample.obj(), key);
+            		addReq.onsuccess = function(){
+            			equal(key, addReq.result, "Data added to Object store");
+            			start();
+            			nextTest();
+            		};
+            		addReq.onerror = function(){
+            			ok(true, "Could not add Data");
+            			start();
+            			nextTest();
+            		};
+            	};
+            	dbOpenRequest.onerror = function(e){
+            		ok(false, "Database NOT Opened successfully");
+            		_("Database NOT opened successfully");
+            		start();
+            		nextTest();
             	};
             });
         </script>
