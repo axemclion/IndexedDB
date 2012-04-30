@@ -95,7 +95,7 @@
 	};
 	
 	IDBTransaction.prototype.objectStore = function(objectStoreName){
-		return new IDBObjectStore(objectStoreName, this);
+		return new modules.IDBObjectStore(objectStoreName, this);
 	};
 	
 	IDBTransaction.prototype.abort = function(){
@@ -107,6 +107,5 @@
 	IDBTransaction.prototype.READ_WRITE = 1;
 	IDBTransaction.prototype.VERSION_CHANGE = 2;
 	
-	modules["IDBTransaction"] = IDBTransaction;
-	
+	window.IDBTransaction = modules["IDBTransaction"] = IDBTransaction;
 }(modules));

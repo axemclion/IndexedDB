@@ -49,7 +49,7 @@
 				}
 				db.transaction(function(tx){
 					tx.executeSql("CREATE TABLE IF NOT EXISTS __sys__ (name VARCHAR(255), keyPath VARCHAR(255), autoInc BOOLEAN)", [], function(){
-						tx.executeSql("SELECT * FROM __sys__ where name = ?", [name], function(tx, data){
+						tx.executeSql("SELECT * FROM __sys__", [], function(tx, data){
 							var e = new Event("success");
 							req.source = req.result = new modules.IDBDatabase(db, name, version, data);
 							if (oldVersion < version) {
