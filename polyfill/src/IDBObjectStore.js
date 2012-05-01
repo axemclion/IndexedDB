@@ -1,4 +1,4 @@
-(function(modules){
+(function(idbModules){
 
 	/**
 	 * IndexedDB Object Store
@@ -19,7 +19,7 @@
 	IDBObjectStore.prototype.__getStoreProps = function(tx, callback){
 		var me = this;
 		if (me.__storeProps) {
-			modules.util.callback(me.__storeProps);
+			idbModules.util.callback(me.__storeProps);
 		} else {
 			tx.executeSql("SELECT * FROM __sys__ where name = ?", [me.name], function(tx, data){
 				me.__storeProps = data.rows.item(0)
@@ -37,9 +37,9 @@
 	 * @param {Object} key
 	 */
 	IDBObjectStore.prototype.__getKey = function(props, value, key){
-		if (!props) modules.util.throwDOMException(0, "Data Error - Could not locate defination for this table", props);
-		if (props.keyPath && key) modules.util.throwDOMException(0, "Data Error - The object store uses in-line keys and the key parameter was provided", props);
-		if (!props.keyPath && props.autoInc === "false" && !key) modules.util.throwDOMException(0, "Data Error - The object store uses out-of-line keys and has no key generator and the key parameter was not provided. ", props);
+		if (!props) idbModules.util.throwDOMException(0, "Data Error - Could not locate defination for this table", props);
+		if (props.keyPath && key) idbModules.util.throwDOMException(0, "Data Error - The object store uses in-line keys and the key parameter was provided", props);
+		if (!props.keyPath && props.autoInc === "false" && !key) idbModules.util.throwDOMException(0, "Data Error - The object store uses out-of-line keys and has no key generator and the key parameter was not provided. ", props);
 		if (props.keyPath) {
 			try {
 				key = eval("value" + props.keyPath);
@@ -71,5 +71,5 @@
 	};
 	
 	
-	modules["IDBObjectStore"] = IDBObjectStore;
-}(modules));
+	idbModules["IDBObjectStore"] = IDBObjectStore;
+}(idbModules));

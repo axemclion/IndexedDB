@@ -1,4 +1,4 @@
-(function(modules){
+(function(idbModules){
 
 	/**
 	 * The IndexedDB Transaction
@@ -12,7 +12,7 @@
 		this.storeNames = typeof storeNames === "string" ? [storeNames] : storeNames;
 		for (var i = 0; i < this.storeNames.length; i++) {
 			if (db.objectStoreNames.indexOf(storeNames[i]) === -1) {
-				modules.util.throwDOMException(0, "The operation failed because the requested database object could not be found. For example, an object store did not exist but was being opened.", storeNames);
+				idbModules.util.throwDOMException(0, "The operation failed because the requested database object could not be found. For example, an object store did not exist but was being opened.", storeNames);
 			}
 		}
 		this.__active = true;
@@ -32,7 +32,7 @@
 		this.__running = true;
 		var me = this;
 		window.setTimeout(function(){
-			!me.__active && modules.util.throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished", me.__active);
+			!me.__active && idbModules.util.throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished", me.__active);
 			// Start using the version transaction
 			me.db.__db.transaction(function(tx){
 				me.__tx = tx;
@@ -53,7 +53,7 @@
 						q.req.result = result;
 						delete q.req.error;
 						var e = new Event("success");
-						modules.util.callback("onsuccess", q.req, [e]);
+						idbModules.util.callback("onsuccess", q.req, [e]);
 						i++;
 						executeRequest();
 					}
@@ -63,7 +63,7 @@
 						q.req.error = "DOMError";
 						var e = new Event();
 						e.debug = arguments;
-						modules.util.callback("onerror", q.req, [e]);
+						idbModules.util.callback("onerror", q.req, [e]);
 						i++;
 						executeRequest();
 					};
@@ -81,8 +81,8 @@
 	}
 	
 	IDBTransaction.prototype.__addToTransactionQueue = function(callback, args){
-		!this.__active && modules.util.throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished.", this.__active);
-		var request = new modules.IDBRequest();
+		!this.__active && idbModules.util.throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished.", this.__active);
+		var request = new idbModules.IDBRequest();
 		request.source = this.db;
 		this.__requests.push({
 			"op": callback,
@@ -95,11 +95,11 @@
 	};
 	
 	IDBTransaction.prototype.objectStore = function(objectStoreName){
-		return new modules.IDBObjectStore(objectStoreName, this);
+		return new idbModules.IDBObjectStore(objectStoreName, this);
 	};
 	
 	IDBTransaction.prototype.abort = function(){
-		!me.__active && modules.util.throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished", me.__active);
+		!me.__active && idbModules.util.throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished", me.__active);
 		
 	};
 	
@@ -107,5 +107,5 @@
 	IDBTransaction.prototype.READ_WRITE = 1;
 	IDBTransaction.prototype.VERSION_CHANGE = 2;
 	
-	window.IDBTransaction = modules["IDBTransaction"] = IDBTransaction;
-}(modules));
+	window.IDBTransaction = idbModules["IDBTransaction"] = IDBTransaction;
+}(idbModules));

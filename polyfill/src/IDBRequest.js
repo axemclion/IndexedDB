@@ -1,4 +1,4 @@
-(function(modules){
+(function(idbModules){
 
 	/**
 	 * The IDBRequest Object that is returns for all async calls
@@ -16,7 +16,7 @@
 	}
 	IDBOpenRequest.prototype = IDBRequest;
 	
-	modules["IDBRequest"] = IDBRequest;
-	modules["IDBOpenRequest"] = IDBOpenRequest;
+	idbModules["IDBRequest"] = IDBRequest;
+	idbModules["IDBOpenRequest"] = IDBOpenRequest;
 	
-}(modules));
+}(idbModules));

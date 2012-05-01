@@ -3,7 +3,7 @@
  * @param {Object} callback
  */
 function buildIndexedDB(callback){
-	window.modules = {};
+	window.idbModules = {};
 	var moduleList = ["util", "IDBRequest", "IDBObjectStore", "IDBTransaction", "IDBDatabase", "indexedDB"];
 	
 	(function addScript(i){

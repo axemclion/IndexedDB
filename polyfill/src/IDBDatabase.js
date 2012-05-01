@@ -1,4 +1,4 @@
-(function(modules){
+(function(idbModules){
 
 	/**
 	 * IDB Database Object
@@ -19,16 +19,16 @@
 		var me = this;
 		createOptions = createOptions || {};
 		createOptions.keyPath = createOptions.keyPath || null;
-		var result = new modules.IDBObjectStore(storeName, me.transaction, false);
+		var result = new idbModules.IDBObjectStore(storeName, me.transaction, false);
 		
 		var transaction = me.__versionTransaction;
 		transaction.__addToTransactionQueue(function(tx, args, success, failure){
 			function error(){
-				modules.util.throwDOMException(0, "Could not create new object store", arguments);
+				idbModules.util.throwDOMException(0, "Could not create new object store", arguments);
 			}
 			
 			if (!me.__versionTransaction) {
-				modules.util.throwDOMException(0, "Invalid State error", me.transaction);
+				idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
 			}
 			//key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE
 			var sql = ["CREATE TABLE", storeName, "(key", createOptions.autoIncrement ? "INTEGER" : "VARCHAR(255)", "PRIMARY KEY", createOptions.autoIncrement ? "AUTOINCREMENT" : "", " NOT NULL UNIQUE , value VARCHAR(10000))"].join(" ");
@@ -49,7 +49,7 @@
 	
 	IDBDatabase.prototype.deleteObjectStore = function(storeName){
 		var error = function(){
-			modules.util.throwDOMException(0, "Could not delete ObjectStore", arguments);
+			idbModules.util.throwDOMException(0, "Could not delete ObjectStore", arguments);
 		}
 		var me = this;
 		me.objectStoreNames.indexOf(storeName) === -1 && error("Object Store does not exist");
@@ -58,7 +58,7 @@
 		var transaction = me.__versionTransaction;
 		transaction.__addToTransactionQueue(function(tx, args, success, failure){
 			if (!me.__versionTransaction) {
-				modules.util.throwDOMException(0, "Invalid State error", me.transaction);
+				idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
 			}
 			me.__db.transaction(function(tx){
 				tx.executeSql("DROP TABLE " + storeName, [], function(){
@@ -74,9 +74,9 @@
 	};
 	
 	IDBDatabase.prototype.transaction = function(storeNames, mode){
-		var transaction = new modules.IDBTransaction(storeNames, mode, this);
+		var transaction = new idbModules.IDBTransaction(storeNames, mode, this);
 		return transaction;
 	};
 	
-	modules["IDBDatabase"] = IDBDatabase;
-})(modules);
+	idbModules["IDBDatabase"] = IDBDatabase;
+})(idbModules);

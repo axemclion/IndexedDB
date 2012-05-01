@@ -1,4 +1,4 @@
-(function(modules){
+(function(idbModules){
 	var DEFAULT_DB_SIZE = 4 * 1024 * 1024;
 	
 	// The sysDB to keep track of version numbers for databases
@@ -11,23 +11,23 @@
 			sysdb.transaction(function(tx){
 				tx.executeSql("CREATE TABLE IF NOT EXISTS dbVersions (name VARCHAR(255), version INT);", [], function(){
 				}, function(){
-					modules.util.throwDOMException("Could not create table __sysdb__ to save DB versions");
+					idbModules.util.throwDOMException("Could not create table __sysdb__ to save DB versions");
 				});
 			});
 		});
 	}, function(){
 		// sysdb Transaction failed
-		modules.util.throwDOMException("Could not create table __sysdb__ to save DB versions");
+		idbModules.util.throwDOMException("Could not create table __sysdb__ to save DB versions");
 	});
 	
-	modules["shimIndexedDB"] = {
+	idbModules["shimIndexedDB"] = {
 		/**
 		 * The IndexedDB Method to create a new database and return the DB
 		 * @param {Object} name
 		 * @param {Object} version
 		 */
 		open: function(name, version){
-			var req = new modules.IDBOpenRequest();
+			var req = new idbModules.IDBOpenRequest();
 			var calledDbCreateError = false;
 			function dbCreateError(){
 				if (calledDbCreateError) {
@@ -37,7 +37,7 @@
 				req.readyState = "done";
 				req.error = "DOMError";
 				e.debug = arguments;
-				modules.util.callback("onerror", req, [e]);
+				idbModules.util.callback("onerror", req, [e]);
 				calledDbCreateError = true
 			}
 			
@@ -45,25 +45,26 @@
 				var db = window.openDatabase(name, 1, name, DEFAULT_DB_SIZE);
 				req.readyState = "done";
 				if (version <= 0 || oldVersion > version) {
-					modules.util.throwDOMException(0, "An attempt was made to open a database using a lower version than the existing version.", version);
+					idbModules.util.throwDOMException(0, "An attempt was made to open a database using a lower version than the existing version.", version);
 				}
 				db.transaction(function(tx){
 					tx.executeSql("CREATE TABLE IF NOT EXISTS __sys__ (name VARCHAR(255), keyPath VARCHAR(255), autoInc BOOLEAN)", [], function(){
 						tx.executeSql("SELECT * FROM __sys__", [], function(tx, data){
 							var e = new Event("success");
-							req.source = req.result = new modules.IDBDatabase(db, name, version, data);
+							req.source = req.result = new idbModules.IDBDatabase(db, name, version, data);
 							if (oldVersion < version) {
 								sysdb.transaction(function(systx){
 									systx.executeSql("UPDATE dbVersions set version = ? where name = ?", [version, name], function(){
 										var e = new Event("success");
 										e.oldVersion = oldVersion, e.newVersion = version;
-										req.result.__versionTransaction = new modules.IDBTransaction([], 2, req.source);
-										modules.util.callback("onupgradeneeded", req, [e]);
-										modules.util.callback("onsuccess", req, [e]);
+										req.result.__versionTransaction = new idbModules.IDBTransaction([], 2, req.source);
+										idbModules.util.callback("onupgradeneeded", req, [e], function(){
+											idbModules.util.callback("onsuccess", req, [e]);
+										});
 									}, dbCreateError);
 								}, dbCreateError);
 							} else {
-								modules.util.callback("onsuccess", req, [e]);
+								idbModules.util.callback("onsuccess", req, [e]);
 							}
 						}, dbCreateError);
 					}, dbCreateError);
@@ -86,7 +87,7 @@
 		},
 		
 		"deleteDatabase": function(name){
-			var req = new modules.IDBOpenRequest();
+			var req = new idbModules.IDBOpenRequest();
 			var calledDBError = false;
 			function dbError(msg){
 				if (calledDBError) {
@@ -97,7 +98,7 @@
 				var e = new Event("error");
 				e.message = msg;
 				e.debug = arguments;
-				modules.util.callback("onerror", req, [e]);
+				idbModules.util.callback("onerror", req, [e]);
 				calledDBError = true;
 			}
 			var version = null;
@@ -107,7 +108,7 @@
 						req.result = undefined;
 						var e = new Event("success");
 						e.newVersion = null, e.oldVersion = version;
-						modules.util.callback("onsuccess", req, [e]);
+						idbModules.util.callback("onsuccess", req, [e]);
 					}, dbError);
 				}, dbError);
 			}
@@ -153,5 +154,5 @@
 		}
 	};
 	
-	window.indexedDB = modules["shimIndexedDB"];
-})(modules);
+	window.indexedDB = idbModules["shimIndexedDB"];
+})(idbModules);

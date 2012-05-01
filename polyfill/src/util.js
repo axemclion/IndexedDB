@@ -1,15 +1,14 @@
-(function(modules){
+(function(idbModules){
 	/**
 	 * A utility method to callback onsuccess, onerror, etc as soon as the calling function's context is over
 	 * @param {Object} fn
 	 * @param {Object} context
 	 * @param {Object} argArray
 	 */
-	function callback(fn, context, argArray){
+	function callback(fn, context, argArray, func){
 		window.setTimeout(function(){
-			if (typeof context[fn] === "function") {
-				context[fn].apply(context, argArray);
-			}
+			(typeof context[fn] === "function") && context[fn].apply(context, argArray);
+			(typeof func === "function") && func();
 		}, 1);
 	}
 	
@@ -28,8 +27,8 @@
 		throw e;
 	}
 	
-	modules["util"] = {
+	idbModules["util"] = {
 		"throwDOMException": throwDOMException,
 		"callback": callback
 	}
-})(modules);
+})(idbModules);
