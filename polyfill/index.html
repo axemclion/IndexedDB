@@ -6,18 +6,23 @@
         </script>
         <script type = "text/javascript">
             function _(msg){
-            	console.log(msg, arguments.callee.caller.arguments);
+            	console.log("[" + QUnit.config.current.module + ":" + QUnit.config.current.testName + "]", msg, arguments.callee.caller.arguments);
             }
         </script>
         <script type = "text/javascript" src= "sampleData.js">
         </script>
         <script type = "text/javascript" src= "src/build.js">
         </script>
-        <script type = "text/javascript" src = "queuedUnit.js">
-        </script>
         <script type = "text/javascript">
+            QUnit.config.autostart = false;
             function startTests(){
-            	buildIndexedDB(runTests);
+            	buildIndexedDB(function(){
+            		console.log("Starting Tests");
+            		deleteDB(function(){
+            			QUnitTests();
+            			start();
+            		});
+            	});
             }
             
             function deleteDB(callback){
@@ -32,146 +37,144 @@
             	};
             }
             
-            function runTests(){
-            	console.log("Starting Tests");
-            	deleteDB(nextTest);
-            };
+            function QUnitTests(){
             
-            var dbVersion = 1;
-            queuedModule("Database");
-            queuedAsyncTest("Opening a Database without version", function(){
-            	var dbOpenRequest = window.indexedDB.open(DB.NAME);
-            	dbOpenRequest.onsuccess = function(e){
-            		ok(true, "Database Opened successfully");
-            		_("Database opened successfully");
-            		start();
-            		nextTest();
-            	};
-            	dbOpenRequest.onerror = function(e){
-            		ok(false, "Database NOT Opened successfully");
-            		_("Database NOT opened successfully");
-            		start();
-            		nextTest();
-            	};
-            	dbOpenRequest.onupgradeneeded = function(e){
-            		ok(false, "Database upgrade should not be called");
-            		_("Database upgrade called");
-            		start();
-            		stop();
-            	};
-            });
-            
-            queuedAsyncTest("Opening a database with a version", function(){
-            	var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
-            	dbOpenRequest.onsuccess = function(e){
-            		ok(true, "Database Opened successfully");
-            		_("Database opened successfully with version");
-            		nextTest();
-            		start();
-            	};
-            	dbOpenRequest.onerror = function(e){
-            		ok(false, "Database NOT Opened successfully");
-            		_("Database NOT opened successfully");
-            		nextTest();
-            		start();
-            	};
-            	dbOpenRequest.onupgradeneeded = function(e){
-            		ok(true, "Database Upgraded successfully");
-            		_("Database upgrade called");
-            	};
-            });
-            
-            queuedModule("Object Store");
-            queuedAsyncTest("Creating an Object Store", function(){
-            	var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
-            	dbOpenRequest.onsuccess = function(e){
-            		ok(true, "Database Opened successfully");
-            		_("Database opened successfully with version");
-            		nextTest();
-            		start();
-            	};
-            	dbOpenRequest.onerror = function(e){
-            		ok(false, "Database NOT Opened successfully");
-            		_("Database NOT opened successfully");
-            		nextTest();
-            		start();
-            	};
-            	dbOpenRequest.onupgradeneeded = function(e){
-            		ok(true, "Database Upgraded successfully");
-            		_("Database upgrade called");
-            		var db = dbOpenRequest.result;
-            		db.createObjectStore(DB.OBJECT_STORE_1);
-            		db.createObjectStore(DB.OBJECT_STORE_2, {
-            			"keyPath": "id",
-            			"autoIncrement": true
-            		});
-            		db.createObjectStore(DB.OBJECT_STORE_3, {
-            			"autoIncrement": true
-            		});
-            		db.createObjectStore(DB.OBJECT_STORE_4, {
-            			"keyPath": "id"
-            		});
-            		equal(db.objectStoreNames.length, 4, "Count of Object Stores created is correct");
-            		_(db.objectStoreNames);
-            		start();
-            		stop();
-            	};
-            });
-            
-            queuedAsyncTest("Deleting an Object Store", function(){
-            	var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
-            	dbOpenRequest.onsuccess = function(e){
-            		ok(true, "Database Opened successfully");
-            		_("Database opened successfully with version");
-            		start();
-            		nextTest();
-            	};
-            	dbOpenRequest.onerror = function(e){
-            		ok(false, "Database NOT Opened successfully");
-            		_("Database NOT opened successfully");
-            		start();
-            		nextTest();
-            	};
-            	dbOpenRequest.onupgradeneeded = function(e){
-            		ok(true, "Database Upgraded successfully, now trying to delete the database");
-            		_("Database upgrade called");
-            		var db = dbOpenRequest.result;
-            		var len = db.objectStoreNames.length;
-            		db.deleteObjectStore(DB.OBJECT_STORE_4);
-            		equal(db.objectStoreNames.indexOf(DB.OBJECT_STORE_4), -1, "Database does not contain Object Store 4");
-            		start();
-            		stop();
-            	};
-            });
-            
-            queuedModule("Transactions");
-            queuedAsyncTest("Simple Transaction", function(){
-            	var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
-            	dbOpenRequest.onsuccess = function(e){
-            		ok(true, "Database Opened successfully");
-            		var db = dbOpenRequest.result;
-            		var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
-            		var objectStore1 = transaction.objectStore(DB.OBJECT_STORE_1);
-            		var key = sample.integer();
-            		var addReq = objectStore1.add(sample.obj(), key);
-            		addReq.onsuccess = function(){
-            			equal(key, addReq.result, "Data added to Object store");
+            	var dbVersion = 1;
+            	module("Database");
+            	asyncTest("Opening a Database without version", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
+            		dbOpenRequest.onsuccess = function(e){
+            			ok(true, "Database Opened successfully");
+            			_("Database opened successfully");
             			start();
-            			nextTest();
+            			//nextTest();
             		};
-            		addReq.onerror = function(){
-            			ok(true, "Could not add Data");
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
             			start();
-            			nextTest();
+            			//nextTest();
             		};
-            	};
-            	dbOpenRequest.onerror = function(e){
-            		ok(false, "Database NOT Opened successfully");
-            		_("Database NOT opened successfully");
-            		start();
-            		nextTest();
-            	};
-            });
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			ok(false, "Database upgrade should not be called");
+            			_("Database upgrade called");
+            			start();
+            			stop();
+            		};
+            	});
+            	
+            	asyncTest("Opening a database with a version", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
+            		dbOpenRequest.onsuccess = function(e){
+            			ok(true, "Database Opened successfully");
+            			_("Database opened successfully with version");
+            			//nextTest();
+            			start();
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			//nextTest();
+            			start();
+            		};
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			ok(true, "Database Upgraded successfully");
+            			_("Database upgrade called");
+            		};
+            	});
+            	
+            	module("Object Store");
+            	asyncTest("Creating an Object Store", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
+            		dbOpenRequest.onsuccess = function(e){
+            			ok(true, "Database Opened successfully");
+            			_("Database opened successfully with version");
+            			//nextTest();
+            			start();
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			//nextTest();
+            			start();
+            		};
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			ok(true, "Database Upgraded successfully");
+            			_("Database upgrade called");
+            			var db = dbOpenRequest.result;
+            			db.createObjectStore(DB.OBJECT_STORE_1);
+            			db.createObjectStore(DB.OBJECT_STORE_2, {
+            				"keyPath": "id",
+            				"autoIncrement": true
+            			});
+            			db.createObjectStore(DB.OBJECT_STORE_3, {
+            				"autoIncrement": true
+            			});
+            			db.createObjectStore(DB.OBJECT_STORE_4, {
+            				"keyPath": "id"
+            			});
+            			equal(db.objectStoreNames.length, 4, "Count of Object Stores created is correct");
+            			_(db.objectStoreNames);
+            			start();
+            			stop();
+            		};
+            	});
+            	
+            	asyncTest("Deleting an Object Store", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
+            		dbOpenRequest.onsuccess = function(e){
+            			ok(true, "Database Opened successfully");
+            			_("Database opened successfully with version");
+            			start();
+            			//nextTest();
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            			//nextTest();
+            		};
+            		dbOpenRequest.onupgradeneeded = function(e){
+            			ok(true, "Database Upgraded successfully, now trying to delete the database");
+            			_("Database upgrade called");
+            			var db = dbOpenRequest.result;
+            			var len = db.objectStoreNames.length;
+            			db.deleteObjectStore(DB.OBJECT_STORE_4);
+            			equal(db.objectStoreNames.indexOf(DB.OBJECT_STORE_4), -1, "Database does not contain Object Store 4");
+            			start();
+            			stop();
+            		};
+            	});
+            	
+            	module("Transactions");
+            	asyncTest("Simple Transaction", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
+            		dbOpenRequest.onsuccess = function(e){
+            			ok(true, "Database Opened successfully");
+            			var db = dbOpenRequest.result;
+            			var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
+            			var objectStore1 = transaction.objectStore(DB.OBJECT_STORE_1);
+            			var key = sample.integer();
+            			var addReq = objectStore1.add(sample.obj(), key);
+            			addReq.onsuccess = function(){
+            				equal(key, addReq.result, "Data added to Object store");
+            				start();
+            				//nextTest();
+            			};
+            			addReq.onerror = function(){
+            				ok(true, "Could not add Data");
+            				start();
+            				//nextTest();
+            			};
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            			//nextTest();
+            		};
+            	});
+            }
         </script>
     </head>
     <body onload ="startTests()">
