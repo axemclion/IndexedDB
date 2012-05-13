@@ -61,7 +61,7 @@
 					function error(){
 						q.req.readyState = "done";
 						q.req.error = "DOMError";
-						var e = new Event();
+						var e = new Event("error");
 						e.debug = arguments;
 						idbModules.util.callback("onerror", q.req, [e]);
 						i++;
