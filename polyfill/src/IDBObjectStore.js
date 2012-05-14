@@ -6,9 +6,9 @@
 	 * @param {Object} name
 	 * @param {Object} transaction
 	 */
-	var IDBObjectStore = function(name, transaction, ready){
+	var IDBObjectStore = function(name, idbTransaction, ready){
 		this.name = name;
-		this.transaction = transaction;
+		this.transaction = idbTransaction;
 		this.__ready = (typeof ready === "undefined") ? true : false;
 	};
 	
@@ -19,7 +19,7 @@
 	IDBObjectStore.prototype.__getStoreProps = function(tx, callback){
 		var me = this;
 		if (me.__storeProps) {
-			idbModules.util.callback(me.__storeProps);
+			callback(me.__storeProps);
 		} else {
 			tx.executeSql("SELECT * FROM __sys__ where name = ?", [me.name], function(tx, data){
 				me.__storeProps = data.rows.item(0)
@@ -99,7 +99,7 @@
 					console.log("Fetched data", data.rows.item(0));
 					try {
 						success(JSON.parse(data.rows.item(0).value));
-					}catch(e){
+					} catch (e) {
 						console.log(e)
 						// If no result is returned, or error occurs when parsing JSON
 						success(undefined);
@@ -112,9 +112,27 @@
 		});
 	}
 	
-	
 	IDBObjectStore.prototype["delete"] = function(value, key){
+		var me = this;
+		return me.transaction.__addToTransactionQueue(function(tx, args, success, error){
+			me.__getStoreProps(tx, function(props){
+				var primaryKey = me.__getKey(props, null, key);
+				console.log("Fetching", me.name, primaryKey);
+				tx.executeSql("DELETE FROM " + me.name + " where key = ?", [primaryKey], function(tx, data){
+					console.log("Fetched data", data.rows.item(0));
+					success(primaryKey);
+				}, function(tx, err){
+					error(err);
+				});
+			});
+		});
+	}
 	
+	IDBObjectStore.prototype.openCursor = function(range, direction){
+		var me = this;
+		var cursorRequest = new idbModules.IDBRequest();
+		var cursor = new idbModules.IDBCursor(range, direction, this, cursorRequest);
+		return cursorRequest;
 	}
 	
 	idbModules["IDBObjectStore"] = IDBObjectStore;

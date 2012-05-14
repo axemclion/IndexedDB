@@ -48,7 +48,11 @@
 						q.op(tx, q["args"], success, error);
 					};
 					
-					function success(result){
+					function success(result, req){
+						if (req) {
+							// Need to do this in case of cursors
+							q.req = req;
+						}
 						q.req.readyState = "done";
 						q.req.result = result;
 						delete q.req.error;
@@ -58,7 +62,7 @@
 						executeRequest();
 					}
 					
-					function error(){
+					function error(errorVal){
 						q.req.readyState = "done";
 						q.req.error = "DOMError";
 						var e = new Event("error");

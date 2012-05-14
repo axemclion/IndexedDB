@@ -6,10 +6,10 @@
 	 * @param {Object} argArray
 	 */
 	function callback(fn, context, argArray, func){
-		window.setTimeout(function(){
+		//window.setTimeout(function(){
 			(typeof context[fn] === "function") && context[fn].apply(context, argArray);
 			(typeof func === "function") && func();
-		}, 1);
+		//}, 1);
 	}
 	
 	/**

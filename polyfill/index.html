@@ -148,11 +148,12 @@
             		};
             	});
             	
+            	queuedModule("ObjectStore CRUD");
             	var key = sample.integer();
             	var data = sample.obj();
             	queuedAsyncTest("Adding data to Object Store", function(){
             		_("Adding " + key);
-            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
             		dbOpenRequest.onsuccess = function(e){
             			_("Really Adding " + key);
             			_("Database opened successfully");
@@ -184,7 +185,7 @@
             	
             	queuedAsyncTest("Updating data in Object Store", function(){
             		_("Updating " + key + data);
-            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
             		dbOpenRequest.onsuccess = function(e){
             			_("Database opened successfully");
             			ok(true, "Database Opened successfully");
@@ -217,7 +218,7 @@
             	
             	queuedAsyncTest("Getting data in Object Store", function(){
             		_("Getting " + key);
-            		var dbOpenRequest = window.indexedDB.open(DB.NAME, ++dbVersion);
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
             		dbOpenRequest.onsuccess = function(e){
             			_("Database opened successfully");
             			ok(true, "Database Opened successfully");
@@ -232,11 +233,86 @@
             				nextTest();
             			};
             			addReq.onerror = function(){
-            				_("Could not add data to database");
+            				_("Could not get data to database");
             				ok(false, "Could not get data");
             				start();
             				nextTest();
             			};
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            			nextTest();
+            		};
+            	});
+            	
+            	queuedAsyncTest("Lots of data Added to objectStore1", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
+            		dbOpenRequest.onsuccess = function(e){
+            			_("Database opened successfully");
+            			ok(true, "Database Opened successfully");
+            			var db = dbOpenRequest.result;
+            			var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
+            			var objectStore1 = transaction.objectStore(DB.OBJECT_STORE_1);
+            			var counter = 0;
+            			for (var i = 0; i < 10; i++) {
+            				var addReq = objectStore1.add(sample.obj(), sample.integer());
+            				addReq.onsuccess = function(){
+            					_(counter + ". Data added to store" + addReq.result);
+            					ok(true, "Data added to store" + addReq.result);
+            					if (++counter >= 10) {
+            						start();
+            						nextTest();
+            					}
+            				};
+            				addReq.onerror = function(){
+            					_(counter + ". Could not get add to database");
+            					ok(false, "Could not add data");
+            					if (++counter >= 10) {
+            						start();
+            						nextTest();
+            					}
+            				};
+            			}
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            			nextTest();
+            		};
+            	});
+            	
+            	queuedModule("Cursor")
+            	queuedAsyncTest("Iterating over cursor", function(){
+            		_("Deleting " + key);
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
+            		dbOpenRequest.onsuccess = function(e){
+            			_("Database opened successfully");
+            			ok(true, "Database Opened successfully");
+            			var db = dbOpenRequest.result;
+            			var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
+            			var objectStore1 = transaction.objectStore(DB.OBJECT_STORE_1);
+            			var cursorReq = objectStore1.openCursor();
+            			cursorReq.onsuccess = function(e){
+            				var cursor = cursorReq.result;
+            				if (cursor) {
+            					ok(true, "Got cursor value " + cursor.key + ":" + cursor.value);
+            					_("Cursor open request succeeded");
+            					cursor["continue"]();
+            				} else {
+            					ok(true, "Iterating over all objects completed");
+            					start();
+            					nextTest();
+            				}
+            			};
+            			cursorReq.onerror = function(e){
+            				_("Error on cursor request")
+            				ok(false, "Could not continue opening cursor");
+            				start();
+            				nextTest();
+            			}
             		};
             		dbOpenRequest.onerror = function(e){
             			ok(false, "Database NOT Opened successfully");

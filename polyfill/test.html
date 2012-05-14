@@ -4,38 +4,43 @@
     </head>
     <body>
         <a href = "javascript:axe()">Run Code</a>
-        <script type = "text/javascript" src = "indexeddb.sqlshim.js">
+        <script type = "text/javascript" src= "sampleData.js">
         </script>
-        <script type = "text/javascript" src = "sampleData.js">
+        <script type = "text/javascript" src= "src/build.js">
         </script>
         <script type = "text/javascript">
-        function _(msg){
-        	console.log(msg, arguments.callee.caller.arguments);
-        }
-        
-        function a(tx){
-        	tx.executeSql("INSERT INTO obj1 (value) values ('Sample" + Math.random() + "')", [], function(){
-        		console.log("Added value");
-        	}, function(){
-        		console.log("Error", this, arguments);
-        	});
-        }
-        
-        function b(tx){
-        	//throw "Aborting transaction";
-        }
-        
-        var db = window.openDatabase("sampleDB", 1, "Sample Database", 10000);
-        db.transaction(function(tx){
-        	a(tx);
-        	console.log("A completed");
-			b(tx);
-			console.log("B completed");
-        }, function(){
-			console.log("Error Callback")
-		}, function(){
-			console.log("SUccess callback");
-		});
+            function _(msg){
+            	console.log(msg, arguments.callee.caller.arguments);
+            }
+            
+            buildIndexedDB(start);
+            
+            
+            function start(){
+            	var dbOpenRequest = window.indexedDB.open(DB.NAME);
+            	dbOpenRequest.onsuccess = function(e){
+            		_("Database opened successfully");
+            		var db = dbOpenRequest.result;
+            		var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
+            		var objectStore1 = transaction.objectStore(DB.OBJECT_STORE_1);
+            		var cursorReq = objectStore1.openCursor();
+            		cursorReq.onsuccess = function(e){
+            			var cursor = cursorReq.result;
+            			console.log("Cursor open request succeeded", cursor.key);
+            			if (cursor) {
+            				cursor["continue"]();
+            			}
+            		};
+            		cursorReq.onerror = function(e){
+            			_("Error on cursor request")
+            		}
+            	};
+            	dbOpenRequest.onerror = function(e){
+            		_("Database NOT opened successfully");
+            		start();
+            		nextTest();
+            	};
+            }
         </script>
     </body>
 </html>
