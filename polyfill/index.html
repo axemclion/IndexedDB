@@ -106,16 +106,17 @@
             			var db = dbOpenRequest.result;
             			db.createObjectStore(DB.OBJECT_STORE_1);
             			db.createObjectStore(DB.OBJECT_STORE_2, {
-            				"keyPath": "id",
+            				"keyPath": "Int",
             				"autoIncrement": true
             			});
             			db.createObjectStore(DB.OBJECT_STORE_3, {
             				"autoIncrement": true
             			});
             			db.createObjectStore(DB.OBJECT_STORE_4, {
-            				"keyPath": "id"
+            				"keyPath": "Int"
             			});
-            			equal(db.objectStoreNames.length, 4, "Count of Object Stores created is correct");
+            			db.createObjectStore(DB.OBJECT_STORE_5);
+            			equal(db.objectStoreNames.length, 5, "Count of Object Stores created is correct");
             			_(db.objectStoreNames);
             			start();
             			stop();
@@ -141,8 +142,8 @@
             			_("Database upgrade called");
             			var db = dbOpenRequest.result;
             			var len = db.objectStoreNames.length;
-            			db.deleteObjectStore(DB.OBJECT_STORE_4);
-            			equal(db.objectStoreNames.indexOf(DB.OBJECT_STORE_4), -1, "Database does not contain Object Store 4");
+            			db.deleteObjectStore(DB.OBJECT_STORE_5);
+            			equal(db.objectStoreNames.indexOf(DB.OBJECT_STORE_5), -1, "Database does not contain Object Store 4");
             			start();
             			stop();
             		};
@@ -152,25 +153,83 @@
             	var key = sample.integer();
             	var data = sample.obj();
             	queuedAsyncTest("Adding data to Object Store", function(){
-            		_("Adding " + key);
             		var dbOpenRequest = window.indexedDB.open(DB.NAME);
             		dbOpenRequest.onsuccess = function(e){
-            			_("Really Adding " + key);
             			_("Database opened successfully");
             			ok(true, "Database Opened successfully");
             			var db = dbOpenRequest.result;
             			var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
             			var objectStore1 = transaction.objectStore(DB.OBJECT_STORE_1);
-            			var addReq = objectStore1.add(data, key);
-            			addReq.onsuccess = function(e){
+            			var addReq1 = objectStore1.add(data, key);
+            			addReq1.onsuccess = function(e){
             				_("Data added to object Store successfully " + key);
-            				equal(key, addReq.result, "Data added to Object store");
+            				equal(key, addReq1.result, "Data added to Object store");
             				start();
             				nextTest();
             			};
-            			addReq.onerror = function(e){
+            			addReq1.onerror = function(e){
             				_("Could not add data to database");
-            				ok(false, "Could not add Data");
+            				ok(false, "Could not add Data to ObjectStore1");
+            				start();
+            				nextTest();
+            			};
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            			nextTest();
+            		};
+            	});
+            	
+            	queuedAsyncTest("Adding data in Object Store with keypath and autoInc", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
+            		dbOpenRequest.onsuccess = function(e){
+            			_("Database opened successfully");
+            			ok(true, "Database Opened successfully");
+            			var db = dbOpenRequest.result;
+            			var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
+            			var objectStore = transaction.objectStore(DB.OBJECT_STORE_2);
+            			var addReq1 = objectStore.add(data);
+            			addReq1.onsuccess = function(e){
+            				_("Data added to object Store successfully " + key);
+            				notEqual(null, addReq1.result, "Data added to Object store");
+            				start();
+            				nextTest();
+            			};
+            			addReq1.onerror = function(e){
+            				_("Could not add data to database");
+            				ok(false, "Could not add Data to ObjectStore1");
+            				start();
+            				nextTest();
+            			};
+            		};
+            		dbOpenRequest.onerror = function(e){
+            			ok(false, "Database NOT Opened successfully");
+            			_("Database NOT opened successfully");
+            			start();
+            			nextTest();
+            		};
+            	});
+            	
+            	queuedAsyncTest("Adding data in Object Store with no and autoInc", function(){
+            		var dbOpenRequest = window.indexedDB.open(DB.NAME);
+            		dbOpenRequest.onsuccess = function(e){
+            			_("Database opened successfully");
+            			ok(true, "Database Opened successfully");
+            			var db = dbOpenRequest.result;
+            			var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
+            			var objectStore = transaction.objectStore(DB.OBJECT_STORE_2);
+            			var addReq1 = objectStore.add(data);
+            			addReq1.onsuccess = function(e){
+            				_("Data added to object Store successfully " + key);
+            				notEqual(null, addReq1.result, "Data added to Object store");
+            				start();
+            				nextTest();
+            			};
+            			addReq1.onerror = function(e){
+            				_("Could not add data to database");
+            				ok(false, "Could not add Data to ObjectStore1");
             				start();
             				nextTest();
             			};

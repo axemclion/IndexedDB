@@ -4,6 +4,7 @@ var DB = {
 	OBJECT_STORE_2: "objectStore2",
 	OBJECT_STORE_3: "objectStore3",
 	OBJECT_STORE_4: "objectStore4",
+	OBJECT_STORE_5: "objectStore5",
 	INDEX1_ON_OBJECT_STORE_1: "Index1_ObjectStore1",
 	INDEX1_ON_OBJECT_STORE_2: "Index1_ObjectStore2"
 };

@@ -13,8 +13,8 @@
             	console.log(msg, arguments.callee.caller.arguments);
             }
             
-            buildIndexedDB(start);
-            
+            //buildIndexedDB(start);
+            start();
             
             function start(){
             	var dbOpenRequest = window.indexedDB.open(DB.NAME);

@@ -4,7 +4,7 @@
  */
 function buildIndexedDB(callback){
 	window.idbModules = {};
-	var moduleList = ["util", "IDBRequest", "IDBCursor", "IDBObjectStore", "IDBTransaction", "IDBDatabase", "indexedDB"];
+	var moduleList = ["util", "Sca", "Key", "IDBRequest", "IDBCursor", "IDBObjectStore", "IDBTransaction", "IDBDatabase", "indexedDB"];
 	
 	(function addScript(i){
 		var x = document.createElement("script");
