@@ -56,7 +56,7 @@
 		}
 		var current = testQueue.splice(0, 1)[0];
 		console.groupEnd();
-		console.group("=========", current.module, ":", current.name, "============");
+		console.groupCollapsed("=========", current.module, ":", current.name, "============");
 		module(current.module);
 		// Expected asserts specified or not
 		if (current.args.length === 2) {

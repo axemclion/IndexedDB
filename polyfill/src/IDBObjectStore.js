@@ -49,8 +49,12 @@
 				callback(me.__storeProps);
 			} else {
 				tx.executeSql("SELECT * FROM __sys__ where name = ?", [me.name], function(tx, data){
-					me.__storeProps = data.rows.item(0);
-					callback(me.__storeProps);
+					if (data.rows.length !== 1) {
+						callback();
+					} else {
+						me.__storeProps = data.rows.item(0);
+						callback(me.__storeProps);
+					}
 				}, function(){
 					callback();
 				});
@@ -66,6 +70,18 @@
 	 * @param {Object} key
 	 */
 	IDBObjectStore.prototype.__deriveKey = function(tx, value, key, callback){
+		function getNextAutoIncKey(){
+			tx.executeSql("SELECT * FROM sqlite_sequence where name like ?", [me.name], function(tx, data){
+				if (data.rows.length !== 1) {
+					idbModules.util.throwDOMException(0, "Data Error - Could not get the auto increment value for key, no auto Inc value returned", data.rows);
+				} else {
+					callback(idbModules.Key.encode(data.rows.item(0).seq));
+				}
+			}, function(tx, error){
+				idbModules.util.throwDOMException(0, "Data Error - Could not get the auto increment value for key", error);
+			});
+		}
+		
 		var me = this;
 		me.__getStoreProps(tx, function(props){
 			if (!props) idbModules.util.throwDOMException(0, "Data Error - Could not locate defination for this table", props);
@@ -76,7 +92,16 @@
 				}
 				if (value) {
 					try {
-						callback(eval("value['" + props.keyPath + "']"));
+						var primaryKey = eval("value['" + props.keyPath + "']");
+						if (!primaryKey) {
+							if (props.autoInc === "true") {
+								getNextAutoIncKey();
+							} else {
+								idbModules.util.throwDOMException(0, "Data Error - Could not eval key from keyPath", e);
+							}
+						} else {
+							callback(primaryKey);
+						}
 					} catch (e) {
 						idbModules.util.throwDOMException(0, "Data Error - Could not eval key from keyPath", e);
 					}
@@ -91,15 +116,7 @@
 						idbModules.util.throwDOMException(0, "Data Error - The object store uses out-of-line keys and has no key generator and the key parameter was not provided. ", props);
 					} else {
 						// Looks like this has autoInc, so lets get the next in sequence and return that.
-						tx.executeSql("SELECT * FROM sqlite_sequence where name like ?", [me.name], function(tx, data){
-							if (data.rows.length !== 1) {
-								idbModules.util.throwDOMException(0, "Data Error - Could not get the auto increment value for key, no auto Inc value returned", data.rows);
-							} else {
-								callback(idbModules.Key.encode(data.rows.item(0).seq));
-							}
-						}, function(tx, error){
-							idbModules.util.throwDOMException(0, "Data Error - Could not get the auto increment value for key", error);
-						})
+						getNextAutoIncKey();
 					}
 				}
 			}
