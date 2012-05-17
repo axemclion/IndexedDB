@@ -125,6 +125,25 @@ onObjectStoreOpen("Updating data in Object Store", DB.OBJECT_STORE_1, function(o
 	};
 });
 
+
+onObjectStoreOpen("Updating non-existant in Object Store", DB.OBJECT_STORE_1, function(objectStore){
+	var key = "UPDATED"
+	var addReq = objectStore.put(sample.obj(), key);
+	addReq.onsuccess = function(){
+		_("Data added to object Store successfully");
+		equal(key, addReq.result, "Data updated in Object store");
+		start();
+		nextTest();
+	};
+	addReq.onerror = function(){
+		_("Could not add data to database");
+		ok(false, "Could not update Data");
+		start();
+		nextTest();
+	};
+});
+
+
 onObjectStoreOpen("Getting data in Object Store", DB.OBJECT_STORE_1, function(objectStore){
 	var addReq = objectStore.get(key);
 	addReq.onsuccess = function(){

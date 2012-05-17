@@ -123,22 +123,26 @@
 		});
 	};
 	
+	function insertData(tx, storeName, value, primaryKey, success, error){
+		var sqlValues = [idbModules.Sca.encode(value)];
+		var sql = ["INSERT INTO", storeName];
+		sql.push(!primaryKey ? "(value)" : "(value, key)");
+		sql.push("VALUES (?");
+		primaryKey && (sql.push(",?"), sqlValues.push(primaryKey));
+		sql.push(")");
+		console.log("SQL for adding", sql.join(" "), sqlValues);
+		tx.executeSql(sql.join(" "), sqlValues, function(tx, data){
+			success(idbModules.Key.decode(primaryKey));
+		}, function(tx, err){
+			error(err);
+		});
+	}
+	
 	IDBObjectStore.prototype.add = function(value, key){
 		var me = this;
 		return me.transaction.__addToTransactionQueue(function(tx, args, success, error){
 			me.__deriveKey(tx, value, key, function(primaryKey){
-				var sqlValues = [idbModules.Sca.encode(value)];
-				var sql = ["INSERT INTO", me.name];
-				sql.push(!primaryKey ? "(value)" : "(value, key)");
-				sql.push("VALUES (?");
-				primaryKey && (sql.push(",?"), sqlValues.push(primaryKey));
-				sql.push(")");
-				console.log("SQL for adding", sql.join(" "), sqlValues);
-				tx.executeSql(sql.join(" "), sqlValues, function(tx, data){
-					success(primaryKey);
-				}, function(tx, err){
-					error(err);
-				});
+				insertData(tx, me.name, value, primaryKey, success, error);
 			});
 		});
 	};
@@ -147,9 +151,16 @@
 		var me = this;
 		return me.transaction.__addToTransactionQueue(function(tx, args, success, error){
 			me.__deriveKey(tx, value, key, function(primaryKey){
-				console.log("Updating", me.name, value, primaryKey);
-				tx.executeSql("UPDATE " + me.name + " SET value = ? where key = ?", [JSON.stringify(value), primaryKey], function(tx, data){
-					success(primaryKey);
+				var sql = "UPDATE " + me.name + " SET value = ? where key = ?";
+				console.log("Updating", sql, [JSON.stringify(value), primaryKey]);
+				tx.executeSql(sql, [JSON.stringify(value), primaryKey], function(tx, data){
+					if (data.rowsAffected === 1) {
+						success(idbModules.Key.decode(primaryKey));
+					} else {
+						// Looks like the data did not exist, lets try adding it
+						console.log("Could not update data as it did not exist, so trying to add it now");
+						insertData(tx, me.name, value, primaryKey, success, error);
+					}
 				}, function(tx, err){
 					error(err);
 				});
