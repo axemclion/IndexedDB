@@ -23,14 +23,14 @@ var key = sample.integer();
 var data = sample.obj();
 
 onObjectStoreOpen("Adding data to Object Store", DB.OBJECT_STORE_1, function(objectStore){
-	var addReq = objectStore.add(data, key);
-	addReq.onsuccess = function(e){
+	var req = objectStore.add(data, key);
+	req.onsuccess = function(e){
 		_("Data added to object Store successfully " + key);
-		equal(key, addReq.result, "Data added to Object store");
+		equal(key, req.result, "Data added to Object store");
 		start();
 		nextTest();
 	};
-	addReq.onerror = function(e){
+	req.onerror = function(e){
 		_("Could not add data to database");
 		ok(false, "Could not add Data to ObjectStore1");
 		start();
@@ -39,14 +39,14 @@ onObjectStoreOpen("Adding data to Object Store", DB.OBJECT_STORE_1, function(obj
 });
 
 onObjectStoreOpen("Adding with keypath and autoInc, no key", DB.OBJECT_STORE_2, function(objectStore){
-	var addReq = objectStore.add(sample.obj());
-	addReq.onsuccess = function(e){
-		_("Data added to object Store successfully " + addReq.result);
-		notEqual(null, addReq.result, "Data added to Object store");
+	var req = objectStore.add(sample.obj());
+	req.onsuccess = function(e){
+		_("Data added to object Store successfully " + req.result);
+		notEqual(null, req.result, "Data added to Object store");
 		start();
 		nextTest();
 	};
-	addReq.onerror = function(e){
+	req.onerror = function(e){
 		_("Could not add data to database");
 		ok(false, "Could not add Data to ObjectStore1");
 		start();
@@ -58,14 +58,14 @@ onObjectStoreOpen("Adding with keypath and autoInc, no key", DB.OBJECT_STORE_2, 
 onObjectStoreOpen("Adding with keypath and autoInc, no key in path", DB.OBJECT_STORE_2, function(objectStore){
 	var data = sample.obj();
 	delete data["Int"]
-	var addReq = objectStore.add(data);
-	addReq.onsuccess = function(e){
-		_("Data added to object Store successfully " + addReq.result);
-		notEqual(null, addReq.result, "Data added to Object store");
+	var req = objectStore.add(data);
+	req.onsuccess = function(e){
+		_("Data added to object Store successfully " + req.result);
+		notEqual(null, req.result, "Data added to Object store");
 		start();
 		nextTest();
 	};
-	addReq.onerror = function(e){
+	req.onerror = function(e){
 		_("Could not add data to database");
 		ok(false, "Could not add Data to ObjectStore1");
 		start();
@@ -75,14 +75,14 @@ onObjectStoreOpen("Adding with keypath and autoInc, no key in path", DB.OBJECT_S
 
 onObjectStoreOpen("Adding with NO keypath and autoInc", DB.OBJECT_STORE_3, function(objectStore){
 	var key = sample.integer();
-	var addReq = objectStore.add(sample.obj(), key);
-	addReq.onsuccess = function(e){
+	var req = objectStore.add(sample.obj(), key);
+	req.onsuccess = function(e){
 		_("Data added to object Store successfully " + key);
-		equal(key, addReq.result, "Data added to Object store");
+		equal(key, req.result, "Data added to Object store");
 		start();
 		nextTest();
 	};
-	addReq.onerror = function(e){
+	req.onerror = function(e){
 		_("Could not add data to database");
 		ok(false, "Could not add Data to ObjectStore1");
 		start();
@@ -92,14 +92,14 @@ onObjectStoreOpen("Adding with NO keypath and autoInc", DB.OBJECT_STORE_3, funct
 
 onObjectStoreOpen("Adding with NO keypath and autoInc - no key specified", DB.OBJECT_STORE_3, function(objectStore){
 	var key = sample.integer();
-	var addReq = objectStore.add(sample.obj());
-	addReq.onsuccess = function(e){
+	var req = objectStore.add(sample.obj());
+	req.onsuccess = function(e){
 		_("Data added to object Store successfully " + key);
-		ok(addReq.result, "Data added to Object store");
+		ok(req.result, "Data added to Object store");
 		start();
 		nextTest();
 	};
-	addReq.onerror = function(e){
+	req.onerror = function(e){
 		_("Could not add data to database");
 		ok(false, "Could not add Data to ObjectStore1");
 		start();
@@ -110,14 +110,14 @@ onObjectStoreOpen("Adding with NO keypath and autoInc - no key specified", DB.OB
 onObjectStoreOpen("Updating data in Object Store", DB.OBJECT_STORE_1, function(objectStore){
 	data = sample.obj();
 	data["modified"] = true;
-	var addReq = objectStore.put(data, key);
-	addReq.onsuccess = function(){
+	var req = objectStore.put(data, key);
+	req.onsuccess = function(){
 		_("Data added to object Store successfully");
-		equal(key, addReq.result, "Data added to Object store");
+		equal(key, req.result, "Data added to Object store");
 		start();
 		nextTest();
 	};
-	addReq.onerror = function(){
+	req.onerror = function(){
 		_("Could not add data to database");
 		ok(false, "Could not update Data");
 		start();
@@ -128,14 +128,14 @@ onObjectStoreOpen("Updating data in Object Store", DB.OBJECT_STORE_1, function(o
 
 onObjectStoreOpen("Updating non-existant in Object Store", DB.OBJECT_STORE_1, function(objectStore){
 	var key = "UPDATED"
-	var addReq = objectStore.put(sample.obj(), key);
-	addReq.onsuccess = function(){
+	var req = objectStore.put(sample.obj(), key);
+	req.onsuccess = function(){
 		_("Data added to object Store successfully");
-		equal(key, addReq.result, "Data updated in Object store");
+		equal(key, req.result, "Data updated in Object store");
 		start();
 		nextTest();
 	};
-	addReq.onerror = function(){
+	req.onerror = function(){
 		_("Could not add data to database");
 		ok(false, "Could not update Data");
 		start();
@@ -143,18 +143,66 @@ onObjectStoreOpen("Updating non-existant in Object Store", DB.OBJECT_STORE_1, fu
 	};
 });
 
-
 onObjectStoreOpen("Getting data in Object Store", DB.OBJECT_STORE_1, function(objectStore){
-	var addReq = objectStore.get(key);
-	addReq.onsuccess = function(){
+	var req = objectStore.get(key);
+	req.onsuccess = function(){
 		_("Data got from object store");
-		deepEqual(addReq.result, data, "Data fetched matches the data");
+		deepEqual(req.result, data, "Data fetched matches the data");
 		start();
 		nextTest();
 	};
-	addReq.onerror = function(){
+	req.onerror = function(){
 		_("Could not get data to database");
 		ok(false, "Could not get data");
+		start();
+		nextTest();
+	};
+});
+
+onObjectStoreOpen("Count in Object Store", DB.OBJECT_STORE_1, function(objectStore){
+	var req = objectStore.count();
+	req.onsuccess = function(e){
+		_("Data counted from object store");
+		equal(req.result, 1, "Total number of objects in database");
+		start();
+		nextTest();
+	};
+	req.onerror = function(){
+		_("Could not get data to database");
+		ok(false, "Could not get count of data");
+		start();
+		nextTest();
+	};
+});
+
+
+onObjectStoreOpen("Delete data in Object Store", DB.OBJECT_STORE_1, function(objectStore){
+	var req = objectStore["delete"](key);
+	req.onsuccess = function(e){
+		_("Data deleted from object store");
+		deepEqual(req.result, undefined, "Data deleted from Object Store");
+		start();
+		nextTest();
+	};
+	req.onerror = function(){
+		_("Could not get data to database");
+		ok(false, "Could not delete data");
+		start();
+		nextTest();
+	};
+});
+
+onObjectStoreOpen("Clear data in Object Store", DB.OBJECT_STORE_1, function(objectStore){
+	var req = objectStore.clear();
+	req.onsuccess = function(e){
+		_("Data cleared from object store");
+		ok(true, "Data from Object Store");
+		start();
+		nextTest();
+	};
+	req.onerror = function(){
+		_("Could not get data to database");
+		ok(false, "Could not delete data");
 		start();
 		nextTest();
 	};
@@ -163,16 +211,16 @@ onObjectStoreOpen("Getting data in Object Store", DB.OBJECT_STORE_1, function(ob
 onObjectStoreOpen("Lots of data Added to objectStore1", DB.OBJECT_STORE_1, function(objectStore){
 	counter = 0;
 	for (var i = 0; i < 10; i++) {
-		var addReq = objectStore.add(sample.obj(), sample.integer());
-		addReq.onsuccess = function(){
-			_(counter + ". Data added to store" + addReq.result);
-			ok(true, "Data added to store" + addReq.result);
+		var req = objectStore.add(sample.obj(), sample.integer());
+		req.onsuccess = function(){
+			_(counter + ". Data added to store" + req.result);
+			ok(true, "Data added to store" + req.result);
 			if (++counter >= 10) {
 				start();
 				nextTest();
 			}
 		};
-		addReq.onerror = function(){
+		req.onerror = function(){
 			_(counter + ". Could not get add to database");
 			ok(false, "Could not add data");
 			if (++counter >= 10) {

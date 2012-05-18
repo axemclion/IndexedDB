@@ -169,6 +169,7 @@
 	};
 	
 	IDBObjectStore.prototype.get = function(key){
+		// TODO Key should also be a key range
 		var me = this;
 		return me.transaction.__addToTransactionQueue(function(tx, args, success, error){
 			me.__waitForReady(function(){
@@ -191,14 +192,47 @@
 	}
 	
 	IDBObjectStore.prototype["delete"] = function(key){
+		// TODO key should also support key ranges
 		var me = this;
 		return me.transaction.__addToTransactionQueue(function(tx, args, success, error){
 			me.__waitForReady(function(){
-				var primaryKey = idbModules.Key.encodeKey(key)
+				var primaryKey = idbModules.Key.encode(key);
 				console.log("Fetching", me.name, primaryKey);
 				tx.executeSql("DELETE FROM " + me.name + " where key = ?", [primaryKey], function(tx, data){
-					console.log("Fetched data", data.rows.item(0));
-					success(primaryKey);
+					console.log("Deleted from database", data.rowsAffected);
+					success();
+				}, function(tx, err){
+					error(err);
+				});
+			});
+		});
+	}
+	
+	IDBObjectStore.prototype.clear = function(){
+		var me = this;
+		return me.transaction.__addToTransactionQueue(function(tx, args, success, error){
+			me.__waitForReady(function(){
+				var primaryKey = idbModules.Key.encode(key);
+				console.log("Fetching", me.name, primaryKey);
+				tx.executeSql("DELETE FROM " + me.name, [], function(tx, data){
+					console.log("Cleared all records from database", data.rowsAffected);
+					success();
+				}, function(tx, err){
+					error(err);
+				});
+			});
+		});
+	}
+	
+	IDBObjectStore.prototype.count = function(){
+		var me = this;
+		return me.transaction.__addToTransactionQueue(function(tx, args, success, error){
+			me.__waitForReady(function(){
+				var sql = "SELECT * FROM " + me.name + ((key !== "undefined") ? " WHERE key = ?" : "");
+				var sqlValues = [];
+				key && sqlValues.push(idbModules.Key.encode(key))
+				tx.executeSql(sql, sqlValues, function(tx, data){
+					success(data.rows.length);
 				}, function(tx, err){
 					error(err);
 				});
