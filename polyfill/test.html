@@ -3,7 +3,6 @@
         <title></title>
     </head>
     <body>
-        <a href = "javascript:axe()">Run Code</a>
         <script type = "text/javascript" src= "sampleData.js">
         </script>
         <script type = "text/javascript" src= "src/build.js">
@@ -17,29 +16,8 @@
             start();
             
             function start(){
-            	var dbOpenRequest = window.indexedDB.open(DB.NAME);
-            	dbOpenRequest.onsuccess = function(e){
-            		_("Database opened successfully");
-            		var db = dbOpenRequest.result;
-            		var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
-            		var objectStore1 = transaction.objectStore(DB.OBJECT_STORE_1);
-            		var cursorReq = objectStore1.openCursor();
-            		cursorReq.onsuccess = function(e){
-            			var cursor = cursorReq.result;
-            			console.log("Cursor open request succeeded", cursor.key);
-            			if (cursor) {
-            				cursor["continue"]();
-            			}
-            		};
-            		cursorReq.onerror = function(e){
-            			_("Error on cursor request")
-            		}
-            	};
-            	dbOpenRequest.onerror = function(e){
-            		_("Database NOT opened successfully");
-            		start();
-            		nextTest();
-            	};
+            	 var db = window.openDatabase("dbName", 1, "dbName", 1024);
+				 
             }
         </script>
     </body>

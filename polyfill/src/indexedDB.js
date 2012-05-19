@@ -33,10 +33,9 @@
 				if (calledDbCreateError) {
 					return;
 				}
-				var e = new Event("error");
+				var e = idbModules.Event("error", arguments); 
 				req.readyState = "done";
 				req.error = "DOMError";
-				e.debug = arguments;
 				idbModules.util.callback("onerror", req, [e]);
 				calledDbCreateError = true
 			}
@@ -50,12 +49,12 @@
 				db.transaction(function(tx){
 					tx.executeSql("CREATE TABLE IF NOT EXISTS __sys__ (name VARCHAR(255), keyPath VARCHAR(255), autoInc BOOLEAN)", [], function(){
 						tx.executeSql("SELECT * FROM __sys__", [], function(tx, data){
-							var e = new Event("success");
+							var e = idbModules.Event("success");
 							req.source = req.result = new idbModules.IDBDatabase(db, name, version, data);
 							if (oldVersion < version) {
 								sysdb.transaction(function(systx){
 									systx.executeSql("UPDATE dbVersions set version = ? where name = ?", [version, name], function(){
-										var e = new Event("success");
+										var e =  idbModules.Event("success");
 										e.oldVersion = oldVersion, e.newVersion = version;
 										req.result.__versionTransaction = new idbModules.IDBTransaction([], 2, req.source);
 										idbModules.util.callback("onupgradeneeded", req, [e], function(){
@@ -95,7 +94,7 @@
 				}
 				req.readyState = "done";
 				req.error = "DOMError";
-				var e = new Event("error");
+				var e = idbModules.Event("error");
 				e.message = msg;
 				e.debug = arguments;
 				idbModules.util.callback("onerror", req, [e]);
@@ -106,7 +105,7 @@
 				sysdb.transaction(function(systx){
 					systx.executeSql("DELETE FROM dbVersions where name = ? ", [name], function(){
 						req.result = undefined;
-						var e = new Event("success");
+						var e = idbModules.Event("success");
 						e.newVersion = null, e.oldVersion = version;
 						idbModules.util.callback("onsuccess", req, [e]);
 					}, dbError);

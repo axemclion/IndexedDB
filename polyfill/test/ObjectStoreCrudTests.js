@@ -125,7 +125,6 @@ onObjectStoreOpen("Updating data in Object Store", DB.OBJECT_STORE_1, function(o
 	};
 });
 
-
 onObjectStoreOpen("Updating non-existant in Object Store", DB.OBJECT_STORE_1, function(objectStore){
 	var key = "UPDATED"
 	var req = objectStore.put(sample.obj(), key);
@@ -211,7 +210,7 @@ onObjectStoreOpen("Clear data in Object Store", DB.OBJECT_STORE_1, function(obje
 onObjectStoreOpen("Lots of data Added to objectStore1", DB.OBJECT_STORE_1, function(objectStore){
 	counter = 0;
 	for (var i = 0; i < 10; i++) {
-		var req = objectStore.add(sample.obj(), sample.integer());
+		var req = objectStore.add(sample.obj(), i + "");
 		req.onsuccess = function(){
 			_(counter + ". Data added to store" + req.result);
 			ok(true, "Data added to store" + req.result);

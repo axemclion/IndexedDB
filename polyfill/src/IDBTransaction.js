@@ -56,7 +56,7 @@
 						q.req.readyState = "done";
 						q.req.result = result;
 						delete q.req.error;
-						var e = new Event("success");
+						var e = idbModules.Event("success");
 						idbModules.util.callback("onsuccess", q.req, [e]);
 						i++;
 						executeRequest();
@@ -65,8 +65,7 @@
 					function error(errorVal){
 						q.req.readyState = "done";
 						q.req.error = "DOMError";
-						var e = new Event("error");
-						e.debug = arguments;
+						var e = idbModules.Event("error", arguments);
 						idbModules.util.callback("onerror", q.req, [e]);
 						i++;
 						executeRequest();
