@@ -1,47 +1,87 @@
+<!doctype html>
 <html>
     <head>
+        <meta charset="utf-8">
+        <link href="style.css" type="text/css" rel="stylesheet"/>
         <title>IndexedDB Tools and Experiments</title>
-        <style type="text/css">
-            html {
-                overflow: auto;
-                background: #6788AD;
-            }
-            
-            body {
-                font-family: Geneva, Verdana, Arial, Helvetica, sans-serif;
-                margin: 0 auto 0 auto;
-                padding: 1em;
-                width: 75%;
-                background-color: white;
-                -moz-box-shadow: 0 0 1.5em #122F4B;
-                -webkit-box-shadow: 0 0 1.5em #122F4B;
-                box-shadow: 0 0 1.5em #122F4B;
-                overflow: auto;
-            }
-        </style>
     </head>
     <body>
-        <h1>IndexedDB Tools and Experiments</h1>
-        <div>
-            My Experiments with IndexeddB [<a href = "http://blog.nparashuram.com/search/label/indexeddb">blog posts</a>]
+        <div id = "content-wrap">
+            <h1>IndexedDB Tools and Experiments</h1>
+            <div id = "content">
+                <div>
+                    My Experiments with IndexeddB [<a href = "http://blog.nparashuram.com/search/label/indexeddb">Blog posts</a>]
+                </div>
+                <div>
+                    <h2>Try out the IndexedDB API</h2>
+                    <a href = "/IndexedDB/trialtool/index.html">IndexedDB API playground</a>. 
+                    <br/>
+                    Examples for Firefox, Chrome and Internet Explorer.
+                    <ul style="line-height:1.5em">
+                        <li>
+                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/moz_indexedDB.html">Firefox 10.0.2 to 12.0a2 (2012-03-05)</a>
+                        </li>
+                        <li>
+                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/ie10.html">Internet Explorer 10 on Windows 8</a>
+                        </li>
+                        <li>
+                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/webkitIndexedDB.html">Google Chrome 13.0.778.0 canary</a>
+                        </li>
+                        <li>
+                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/all.html">All examples together</a>
+                        </li>
+                        <li>
+                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/ie.html">Internet 8+ with IndexedDB prototype</a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h2>LINQ API for IndexedDB</h2>
+                    IndexedDB API does not support queries. 
+                    <br/>
+                    Check out the <a href = "http://nparashuram.com/Linq2IndexedDB/">LINQ API for IndexedDB</a>
+                </div>
+                <div>
+                    <h2>Jquery IndexedDB Plugin</h2>
+                    Use the IndexedDB API with Jquery with the <a href = "http://nparashuram.com/jquery-indexeddb/index.html">JQuery Plugin for IndexedDB</a>
+                    <ul style="line-height:1.5em">
+                        <li>
+                            <a href = "/jquery-indexeddb/jquery.indexeddb.js">jquery.indexeddb.js</a>
+                        </li>
+                        <li>
+                            <a href = "/jquery-indexeddb/example/index.html">Sample application</a>
+                        </li>
+                        <li>
+                            <a href = "/jquery-indexeddb/test/">Test Suite</a>
+                        </li>
+                        <li>
+                            <a href = "https://github.com/axemclion/jquery-indexeddb/blob/gh-pages/docs/README.md">Documentation</a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h2>IndexedDB Polyfill</h2>
+                    IndexedDB is not yet supported by all browsers. Use the IndexedDB polyfill built on WebSQL. [work in progress]
+                    <br/>
+                    Check out the <a href = "/IndexedDB/polyfill/index.html">IndexedDB polyfill test suites</a>
+                </div>
+                <div>
+                    <h2>Presentations</h2>
+                    <div>
+                        Some of my talks and presentations on IndexedDB
+                    </div>
+                    <ul>
+                        <li>
+                            <a href = "http://blog.nparashuram.com/2011/03/tutorial-on-indexed-db-zeollar-session.html">IndexedDB talk on Zeollar</a>
+                        </li>
+                        <li>
+                            <a href = "http://blog.nparashuram.com/2011/11/jsfoo-bangalore-session-videos-and.html">IndexedDB Designing the API</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <ul style="line-height:1.5em">
-            <li>
-                <a href = "http://nparashuram.com/Linq2IndexedDB/">LINQ API for IndexedDB</a>
-            </li>
-            <li>
-                <a href = "http://nparashuram.com/jquery-indexeddb/index.html">JQuery Plugin for IndexedDB</a>
-                (<a href = "http://nparashuram.com/jquery-indexeddb/test/">test cases</a>)
-            </li>
-            <li>
-                <a href = "/IndexedDB/trialtool/index.html">IndexedDB API playground</a>
-            </li>
-            <li>
-                <a href = "/IndexedDB/polyfill/index.html">IndexedDB polyfill using WebSQL</a>
-                (Work in progress)
-            </li>
-        </ul>
-		<a href="http://github.com/you"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://a248.e.akamai.net/camo.github.com/bec6c51521dcc8148146135149fe06a9cc737577/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub"></a>
+        <a href="http://github.com/axemclion/IndexedDB"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://a248.e.akamai.net/camo.github.com/bec6c51521dcc8148146135149fe06a9cc737577/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub"></a>
         <script type="text/javascript">
             var _gaq = _gaq || [];
             _gaq.push(['_setAccount', 'UA-617499-9']);

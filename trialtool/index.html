@@ -10,7 +10,6 @@
             body {
                 font-family: Geneva, Verdana, Arial, Helvetica, sans-serif;
                 margin: 0 auto 0 auto;
-                padding: 1em;
                 width: 75%;
                 background-color: white;
                 -moz-box-shadow: 0 0 1.5em #122F4B;
@@ -18,37 +17,51 @@
                 box-shadow: 0 0 1.5em #122F4B;
                 overflow: auto;
             }
+            
+            h1 {
+                padding: 1%;
+                background-color: #122F4B;
+                color: white;
+                font-family: Georgia, "Times New Roman", Times;
+                font-weight: normal;
+                text-align: center;
+                padding: 20px 0;
+                margin: 0;
+            }
         </style>
     </head>
     <body>
-        <h1>IndexedDB</h1>
-        <div>
-            This page illustrates the <a target = "_blank" href = "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Overview.html">IndexedDB</a>
-            with examples in <a href = "http://nparashuram.com/projects/trialtool.html" target = "_blank">TrialTool</a>. 
+        <h1>IndexedDB API Playground</h1>
+        <div style ="padding : 1em">
+            <div>
+                This page illustrates the <a target = "_blank" href = "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Overview.html">IndexedDB</a>
+                with examples in <a target="_blank" href= "http://nparashuram.com/projects/trialtool.html" target = "_blank">TrialTool</a>. 
+            </div>
+            <div>
+                More details on the <a target="_blank" href="http://blog.nparashuram.com/search/label/indexeddb" target = "_blank">blog</a>
+            </div>
+            <ul style="line-height:1.5em">
+                <li>
+                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/moz_indexedDB.html">Firefox 10.0.2 to 12.0a2 (2012-03-05)</a>
+                </li>
+                <li>
+                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/ie10.html">Internet Explorer 10 on Windows 8</a>
+                </li>
+                <li>
+                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/webkitIndexedDB.html">Google Chrome 13.0.778.0 canary</a>
+                </li>
+                <li>
+                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/all.html">All examples together</a>
+                </li>
+                <li>
+                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/ie.html">Internet 8+ with IndexedDB prototype</a>
+                </li>
+            </ul>
+            <h4>Note that the IndexedDB standards and implementations are changing. These examples are tested against the specified versions only. </h4>
+            <hr/>
+			<h4>You should also check out my <a target="_blank" href= "http://nparashuram.com/IndexedDB">other projects</a> related to IndexedDB</h4>
+            <h5>You can also follow my <a target="_blank" href= "http://blog.nparashuram.com/search/label/indexeddb">blog</a> for updates</h5>
         </div>
-        <div>
-            More details on the <a href ="http://blog.nparashuram.com/search/label/indexeddb" target = "_blank">blog</a>
-        </div>
-        <ul style="line-height:1.5em">
-            <li>
-                <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/moz_indexedDB.html">Firefox 10.0.2 to 12.0a2 (2012-03-05)</a>
-            </li>
-            <li>
-                <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/ie10.html">Internet Explorer 10 on Windows 8</a>
-            </li>
-            <li>
-                <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/webkitIndexedDB.html">Google Chrome 13.0.778.0 canary</a>
-            </li>
-            <li>
-                <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/all.html">All examples together</a>
-            </li>
-            <li>
-                <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/ie.html">Internet 8+ with IndexedDB prototype</a>
-            </li>
-        </ul>
-        <h4>Note that the IndexedDB standards and implementations are changing. These examples are tested against the specified versions only. </h4>
-        <h5>You can also follow my <a href = "http://blog.nparashuram.com/search/label/indexeddb">blog</a> for updates</h5>
-        <hr/><h4>You should also check out my <a href = "http://nparashuram.com/IndexedDB">other projects</a> related to IndexedDB</h4>
         <script type="text/javascript">
             
             var _gaq = _gaq || [];
