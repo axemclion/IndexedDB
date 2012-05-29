@@ -31,7 +31,7 @@
 				idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
 			}
 			//key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE
-			var sql = ["CREATE TABLE", storeName, "(key VARCHAR(10000)", createOptions.autoIncrement ? ", inc INTEGER PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY", ", value VARCHAR(10000))"].join(" ");
+			var sql = ["CREATE TABLE", storeName, "(key BLOB", createOptions.autoIncrement ? ", inc INTEGER PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY", ", value BLOB)"].join(" ");
 			console.log(sql);
 			tx.executeSql(sql, [], function(tx, data){
 				tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false], function(){

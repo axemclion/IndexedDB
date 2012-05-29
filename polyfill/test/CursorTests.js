@@ -3,7 +3,6 @@ function openObjectStore(name, storeName, callback){
 		var dbOpenRequest = window.indexedDB.open(DB.NAME);
 		dbOpenRequest.onsuccess = function(e){
 			_("Database opened successfully");
-			ok(true, "Database Opened successfully");
 			var db = dbOpenRequest.result;
 			var transaction = db.transaction([DB.OBJECT_STORE_1, DB.OBJECT_STORE_2], IDBTransaction.READ_WRITE);
 			var objectStore = transaction.objectStore(DB.OBJECT_STORE_1);
@@ -20,16 +19,50 @@ function openObjectStore(name, storeName, callback){
 
 queuedModule("Cursor");
 
-openObjectStore("Iterative over a cursor", DB.OBJECT_STORE_1, function(objectStore){
+openObjectStore("Iterating over cursor", DB.OBJECT_STORE_1, function(objectStore){
 	var cursorReq = objectStore.openCursor();
 	cursorReq.onsuccess = function(e){
 		var cursor = cursorReq.result;
 		if (cursor) {
-			ok(true, "Got cursor value " + cursor.key + ":" + cursor.value);
-			_("Cursor open request succeeded");
+			ok(true, "Iterating over cursor " + cursor.key + " for value " + JSON.stringify(cursor.value))
 			cursor["continue"]();
 		} else {
-			ok(true, "Iterating over all objects completed");
+			start();
+			nextTest();
+		}
+	};
+	cursorReq.onerror = function(e){
+		_("Error on cursor request")
+		ok(false, "Could not continue opening cursor");
+		start();
+		nextTest();
+	}
+});
+
+openObjectStore("Updating using a cursor", DB.OBJECT_STORE_1, function(objectStore){
+	var cursorReq = objectStore.openCursor();
+	cursorReq.onsuccess = function(e){
+		var cursor = cursorReq.result;
+		if (cursor) {
+			if (cursor.value.Int % 3 === 0) {
+				cursor.value["cursorUpdate"] = true;
+				ok(true, "Trying to update cursor value " + cursor.key + ":" + JSON.stringify(cursor.value));
+				var updateReq = cursor.update(cursor.value);
+				updateReq.onsuccess = function(){
+					equal(cursor.key, updateReq.result, "Update value " + cursor.key);
+					_("Updated cursor with key " + updateReq.result);
+					cursor["continue"]();
+				};
+				updateReq.onerror = function(){
+					ok(false, "No Update " + cursor.key);
+					cursor["continue"]();
+				};
+			} else {
+				ok(true, "Got cursor value " + cursor.key + ":" + JSON.stringify(cursor.value));
+				cursor["continue"]();
+			}
+		} else {
+			_("Iterating over all objects completed");
 			start();
 			nextTest();
 		}
@@ -43,17 +76,29 @@ openObjectStore("Iterative over a cursor", DB.OBJECT_STORE_1, function(objectSto
 });
 
 
-openObjectStore("Iterative over a cursor with Key Range", DB.OBJECT_STORE_1, function(objectStore){
-	var keyRange = IDBKeyRange.bound(4, 6, true, true);
-	var cursorReq = objectStore.openCursor(keyRange);
+openObjectStore("Deleting using a cursor", DB.OBJECT_STORE_1, function(objectStore){
+	var cursorReq = objectStore.openCursor();
 	cursorReq.onsuccess = function(e){
 		var cursor = cursorReq.result;
 		if (cursor) {
-			ok(true, "Got cursor value " + cursor.key + ":" + cursor.value);
-			_("Cursor open request succeeded");
-			cursor["continue"]();
+			if (cursor.value.Int % 5 === 0) {
+				ok(true, "Trying to delete cursor value " + cursor.key + ":" + JSON.stringify(cursor.value));
+				var updateReq = cursor["delete"]();
+				updateReq.onsuccess = function(){
+					equal(undefined, updateReq.result, "Deleted value " + cursor.key);
+					_("Deleted cursor with key " + updateReq.result);
+					cursor["continue"]();
+				};
+				updateReq.onerror = function(){
+					ok(false, "No delete " + cursor.key);
+					cursor["continue"]();
+				};
+			} else {
+				ok(true, "Got cursor value " + cursor.key + ":" + JSON.stringify(cursor.value));
+				cursor["continue"]();
+			}
 		} else {
-			ok(true, "Iterating over all objects completed");
+			_("Iterating over all objects completed");
 			start();
 			nextTest();
 		}

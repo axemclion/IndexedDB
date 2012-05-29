@@ -174,7 +174,6 @@ onObjectStoreOpen("Count in Object Store", DB.OBJECT_STORE_1, function(objectSto
 	};
 });
 
-
 onObjectStoreOpen("Delete data in Object Store", DB.OBJECT_STORE_1, function(objectStore){
 	var req = objectStore["delete"](key);
 	req.onsuccess = function(e){
@@ -190,6 +189,7 @@ onObjectStoreOpen("Delete data in Object Store", DB.OBJECT_STORE_1, function(obj
 		nextTest();
 	};
 });
+
 
 onObjectStoreOpen("Clear data in Object Store", DB.OBJECT_STORE_1, function(objectStore){
 	var req = objectStore.clear();
@@ -209,12 +209,12 @@ onObjectStoreOpen("Clear data in Object Store", DB.OBJECT_STORE_1, function(obje
 
 onObjectStoreOpen("Lots of data Added to objectStore1", DB.OBJECT_STORE_1, function(objectStore){
 	counter = 0;
-	for (var i = 0; i < 10; i++) {
+	for (var i = 0; i < 15; i++) {
 		var req = objectStore.add(sample.obj(), i + "");
 		req.onsuccess = function(){
 			_(counter + ". Data added to store" + req.result);
 			ok(true, "Data added to store" + req.result);
-			if (++counter >= 10) {
+			if (++counter >= 15) {
 				start();
 				nextTest();
 			}

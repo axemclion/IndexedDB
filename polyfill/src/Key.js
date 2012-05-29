@@ -5,6 +5,7 @@
 	var Key = (function(){
 		return {
 			encode: function(key){
+				// TODO The keys should be numbers, as they need to be compared
 				return JSON.stringify(key);
 			},
 			decode: function(key){
