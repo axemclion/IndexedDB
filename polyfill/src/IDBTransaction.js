@@ -37,6 +37,27 @@
 			me.db.__db.transaction(function(tx){
 				me.__tx = tx;
 				var q = null, i = 0;
+				function success(result, req){
+					if (req) {
+						q.req = req;// Need to do this in case of cursors
+					}
+					q.req.readyState = "done";
+					q.req.result = result;
+					delete q.req.error;
+					var e = idbModules.Event("success");
+					idbModules.util.callback("onsuccess", q.req, [e]);
+					i++;
+					executeRequest();
+				};
+				
+				function error(errorVal){
+					q.req.readyState = "done";
+					q.req.error = "DOMError";
+					var e = idbModules.Event("error", arguments);
+					idbModules.util.callback("onerror", q.req, [e]);
+					i++;
+					executeRequest();
+				};
 				try {
 					function executeRequest(){
 						if (i >= me.__requests.length) {
@@ -47,38 +68,17 @@
 						q = me.__requests[i];
 						q.op(tx, q["args"], success, error);
 					};
-					
-					function success(result, req){
-						if (req) {
-							// Need to do this in case of cursors
-							q.req = req;
-						}
-						q.req.readyState = "done";
-						q.req.result = result;
-						delete q.req.error;
-						var e = idbModules.Event("success");
-						idbModules.util.callback("onsuccess", q.req, [e]);
-						i++;
-						executeRequest();
-					}
-					
-					function error(errorVal){
-						q.req.readyState = "done";
-						q.req.error = "DOMError";
-						var e = idbModules.Event("error", arguments);
-						idbModules.util.callback("onerror", q.req, [e]);
-						i++;
-						executeRequest();
-					};
-					
 					executeRequest();
 				} catch (e) {
-				
+					// TODO - Call transaction onerror
+					console.error("An exception occured in transaction", arguments);
 				}
 			}, function(){
-				// Error callback
+				// TODO - Call transaction onerror
+				console.error("An error in transaction", arguments);
 			}, function(){
-				// Transaction completed
+				// TODO - Call transaction oncomplete 
+				console.log("Transaction completed", arguments);
 			});
 		}, 1);
 	}

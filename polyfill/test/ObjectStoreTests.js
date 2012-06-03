@@ -28,7 +28,7 @@ queuedAsyncTest("Creating an Object Store", function(){
 		db.createObjectStore(DB.OBJECT_STORE_4, {
 			"keyPath": "Int"
 		});
-		db.createObjectStore(DB.OBJECT_STORE_5);
+		var objectStore5 = db.createObjectStore(DB.OBJECT_STORE_5);
 		equal(db.objectStoreNames.length, 5, "Count of Object Stores created is correct");
 		_(db.objectStoreNames);
 		start();

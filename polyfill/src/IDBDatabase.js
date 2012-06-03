@@ -19,7 +19,7 @@
 		var me = this;
 		createOptions = createOptions || {};
 		createOptions.keyPath = createOptions.keyPath || null;
-		var result = new idbModules.IDBObjectStore(storeName, me.transaction, false);
+		var result = new idbModules.IDBObjectStore(storeName, me.__versionTransaction, false);
 		
 		var transaction = me.__versionTransaction;
 		transaction.__addToTransactionQueue(function(tx, args, success, failure){
@@ -34,8 +34,8 @@
 			var sql = ["CREATE TABLE", storeName, "(key BLOB", createOptions.autoIncrement ? ", inc INTEGER PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY", ", value BLOB)"].join(" ");
 			console.log(sql);
 			tx.executeSql(sql, [], function(tx, data){
-				tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false], function(){
-					result.__setReadyState(true);
+				tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false, JSON.stringify({})], function(){
+					result.__setReadyState("createObjectStore", true);
 					success(result);
 				}, error);
 			}, error);
@@ -61,10 +61,14 @@
 				idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
 			}
 			me.__db.transaction(function(tx){
-				tx.executeSql("DROP TABLE " + storeName, [], function(){
-					tx.executeSql("DELETE FROM __sys__ WHERE name = ?", [storeName], function(){
-					}, error);
-				}, error);
+				tx.executeSql("SELECT * FROM __sys__ where name = ?", [storeName], function(tx, data){
+					if (data.rows.length > 0) {
+						tx.executeSql("DROP TABLE " + storeName, [], function(){
+							tx.executeSql("DELETE FROM __sys__ WHERE name = ?", [storeName], function(){
+							}, error);
+						}, error);
+					}
+				});
 			});
 		});
 	};

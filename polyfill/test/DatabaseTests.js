@@ -20,6 +20,12 @@ queuedAsyncTest("Opening a Database without version", function(){
 		start();
 		stop();
 	};
+	dbOpenRequest.onblocked = function(e){
+		ok(true, "Database blocked called");
+		_("Database blocked called");
+		start();
+		stop();
+	};
 });
 
 queuedAsyncTest("Opening a database with a version", function(){
@@ -39,5 +45,11 @@ queuedAsyncTest("Opening a database with a version", function(){
 	dbOpenRequest.onupgradeneeded = function(e){
 		ok(true, "Database Upgraded successfully");
 		_("Database upgrade called");
+	};
+	dbOpenRequest.onblocked = function(e){
+		ok(true, "Database blocked called");
+		_("Database blocked called");
+		start();
+		stop();
 	};
 });

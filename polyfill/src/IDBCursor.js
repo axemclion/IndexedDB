@@ -7,7 +7,7 @@
 	 * @param {Object} idbObjectStore
 	 * @param {Object} cursorRequest
 	 */
-	function IDBCursor(range, direction, idbObjectStore, cursorRequest){
+	function IDBCursor(range, direction, idbObjectStore, cursorRequest, keyColumnName, valueColumnName){
 		this.__range = range;
 		this.__idbObjectStore = idbObjectStore;
 		this.__req = cursorRequest;
@@ -15,6 +15,9 @@
 		this.key = undefined;
 		this.direction = direction;
 		this.source = this.idbObjectStore;
+		
+		this.__keyColumnName = keyColumnName;
+		this.__valueColumnName = valueColumnName;
 		
 		if (!this.__idbObjectStore.transaction.__active) idbModules.util.throwDOMException("TransactionInactiveError - The transaction this IDBObjectStore belongs to is not active.");
 		
@@ -40,7 +43,7 @@
 			}
 		}
 		
-		if (key) {
+		if (typeof key !== "undefined") {
 			sql.push((me.__range && (me.__range.lower || me.__range.upper)) ? "AND" : "WHERE")
 			sql.push("key = ?");
 			sqlValues.push(idbModules.Key.encode(key));
@@ -51,7 +54,9 @@
 		console.log(sql.join(" "), sqlValues);
 		tx.executeSql(sql.join(" "), sqlValues, function(tx, data){
 			if (data.rows.length === 1) {
-				success(idbModules.Key.decode(data.rows.item(0).key), idbModules.Sca.decode(data.rows.item(0).value));
+				var key = idbModules.Key.decode(data.rows.item(0)[me.__keyColumnName]);
+				var val = idbModules.Sca.decode(data.rows.item(0)[me.__valueColumnName]);
+				success(key, val);
 			} else {
 				console.log("Reached end of cursors");
 				success(undefined, undefined);
@@ -66,9 +71,9 @@
 		var me = this;
 		this.__idbObjectStore.transaction.__addToTransactionQueue(function(tx, args, success, error){
 			me.__offset++;
-			me.__find(key, tx, function(key, value){
-				me.key = key, me.value = value;
-				success(key ? me : undefined, me.__req);
+			me.__find(key, tx, function(key, val){
+				me.key = key, me.value = val;
+				success(typeof me.key !== "undefined" ? me : undefined, me.__req);
 			}, function(data){
 				error(data);
 			});
@@ -95,7 +100,7 @@
 	IDBCursor.prototype.update = function(valueToUpdate){
 		var me = this;
 		return this.__idbObjectStore.transaction.__addToTransactionQueue(function(tx, args, success, error){
-			me.__find(null, tx, function(key, value){
+			me.__find(undefined, tx, function(key, value){
 				var sql = "UPDATE " + me.__idbObjectStore.name + " SET value = ? WHERE key = ?";
 				console.log(sql, valueToUpdate, key);
 				tx.executeSql(sql, [idbModules.Sca.encode(valueToUpdate), idbModules.Key.encode(key)], function(tx, data){
@@ -116,7 +121,7 @@
 	IDBCursor.prototype["delete"] = function(){
 		var me = this;
 		return this.__idbObjectStore.transaction.__addToTransactionQueue(function(tx, args, success, error){
-			me.__find(null, tx, function(key, value){
+			me.__find(undefined, tx, function(key, value){
 				var sql = "DELETE FROM  " + me.__idbObjectStore.name + " WHERE key = ?";
 				console.log(sql, key);
 				tx.executeSql(sql, [idbModules.Key.encode(key)], function(tx, data){

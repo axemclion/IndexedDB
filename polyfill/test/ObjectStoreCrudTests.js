@@ -210,7 +210,7 @@ onObjectStoreOpen("Clear data in Object Store", DB.OBJECT_STORE_1, function(obje
 onObjectStoreOpen("Lots of data Added to objectStore1", DB.OBJECT_STORE_1, function(objectStore){
 	counter = 0;
 	for (var i = 0; i < 15; i++) {
-		var req = objectStore.add(sample.obj(), i + "");
+		var req = objectStore.add(sample.obj(), i);
 		req.onsuccess = function(){
 			_(counter + ". Data added to store" + req.result);
 			ok(true, "Data added to store" + req.result);

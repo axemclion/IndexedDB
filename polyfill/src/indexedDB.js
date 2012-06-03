@@ -29,11 +29,12 @@
 		open: function(name, version){
 			var req = new idbModules.IDBOpenRequest();
 			var calledDbCreateError = false;
+			
 			function dbCreateError(){
 				if (calledDbCreateError) {
 					return;
 				}
-				var e = idbModules.Event("error", arguments); 
+				var e = idbModules.Event("error", arguments);
 				req.readyState = "done";
 				req.error = "DOMError";
 				idbModules.util.callback("onerror", req, [e]);
@@ -43,20 +44,25 @@
 			function openDB(oldVersion){
 				var db = window.openDatabase(name, 1, name, DEFAULT_DB_SIZE);
 				req.readyState = "done";
+				if (typeof version === "undefined") {
+					version = oldVersion || 1;
+				}
 				if (version <= 0 || oldVersion > version) {
 					idbModules.util.throwDOMException(0, "An attempt was made to open a database using a lower version than the existing version.", version);
 				}
+				
 				db.transaction(function(tx){
-					tx.executeSql("CREATE TABLE IF NOT EXISTS __sys__ (name VARCHAR(255), keyPath VARCHAR(255), autoInc BOOLEAN)", [], function(){
+					tx.executeSql("CREATE TABLE IF NOT EXISTS __sys__ (name VARCHAR(255), keyPath VARCHAR(255), autoInc BOOLEAN, indexes BLOB)", [], function(){
 						tx.executeSql("SELECT * FROM __sys__", [], function(tx, data){
 							var e = idbModules.Event("success");
 							req.source = req.result = new idbModules.IDBDatabase(db, name, version, data);
 							if (oldVersion < version) {
+								// DB Upgrade in progress 
 								sysdb.transaction(function(systx){
 									systx.executeSql("UPDATE dbVersions set version = ? where name = ?", [version, name], function(){
-										var e =  idbModules.Event("success");
+										var e = idbModules.Event("success");
 										e.oldVersion = oldVersion, e.newVersion = version;
-										req.result.__versionTransaction = new idbModules.IDBTransaction([], 2, req.source);
+										req.transaction = req.result.__versionTransaction = new idbModules.IDBTransaction([], 2, req.source);
 										idbModules.util.callback("onupgradeneeded", req, [e], function(){
 											idbModules.util.callback("onsuccess", req, [e]);
 										});
@@ -82,6 +88,7 @@
 					}
 				}, dbCreateError);
 			}, dbCreateError);
+			
 			return req;
 		},
 		
@@ -148,8 +155,7 @@
 			return req;
 		},
 		"cmp": function(key1, key2){
-			// TOOD Implement this in a database specific way
-			return key1 > key2 ? 1 : key1 == key2 ? 0 : -1;
+			return idbModules.Key.encode(key1) > idbModules.Key.encode(key2) ? 1 : key1 == key2 ? 0 : -1;
 		}
 	};
 	

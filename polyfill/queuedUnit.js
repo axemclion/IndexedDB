@@ -47,6 +47,7 @@
 	 * Once the current test is over, call nextTest() to start running the next test
 	 */
 	var timer = null;
+	var testCount = 1;
 	function nextTest(){
 		window.clearTimeout(timer);
 		if (testQueue.length <= 0) {
@@ -56,7 +57,7 @@
 		}
 		var current = testQueue.splice(0, 1)[0];
 		console.groupEnd();
-		console.groupCollapsed("=========", current.module, ":", current.name, "============");
+		console.groupCollapsed("=========", testCount++, current.module, ":", current.name, "============");
 		module(current.module);
 		// Expected asserts specified or not
 		if (current.args.length === 2) {
