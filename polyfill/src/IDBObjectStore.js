@@ -276,7 +276,7 @@
 	};
 	
 	IDBObjectStore.prototype.index = function(indexName){
-		var index = new idbModules.IDBIndex(indexName);
+		var index = new idbModules.IDBIndex(indexName, this);
 		return index;
 	};
 	

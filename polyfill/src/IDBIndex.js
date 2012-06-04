@@ -44,7 +44,7 @@
 								try {
 									var value = idbModules.Sca.decode(data.rows.item(i).value);
 									var indexKey = eval("value['" + keyPath + "']");
-									tx.executeSql("UPDATE " + me.__idbObjectStore.name + " set " + columnName + " = ? where key = ?", [indexKey, data.rows.item(i).key], function(tx, data){
+									tx.executeSql("UPDATE " + me.__idbObjectStore.name + " set " + columnName + " = ? where key = ?", [idbModules.Key.encode(indexKey), data.rows.item(i).key], function(tx, data){
 										initIndexForRow(i + 1);
 									}, error);
 								} catch (e) {
@@ -85,13 +85,13 @@
 	
 	IDBIndex.prototype.openCursor = function(range, direction){
 		var cursorRequest = new idbModules.IDBRequest();
-		var cursor = new idbModules.IDBCursor(range, direction, this.source, cursorRequest, "indexName", "value");
+		var cursor = new idbModules.IDBCursor(range, direction, this.source, cursorRequest, this.indexName, "value");
 		return cursorRequest;
 	};
 	
 	IDBIndex.prototype.openKeyCursor = function(range, direction){
 		var cursorRequest = new idbModules.IDBRequest();
-		var cursor = new idbModules.IDBCursor(range, direction, this.source, cursorRequest, "key", "indexName");
+		var cursor = new idbModules.IDBCursor(range, direction, this.source, cursorRequest, this.indexName, "key");
 		return cursorRequest;
 	};
 	

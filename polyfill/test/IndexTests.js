@@ -65,3 +65,45 @@ openObjectStore("Adding data after index is created", DB.OBJECT_STORE_1, functio
 	};
 });
 
+openObjectStore("Index Cursor", DB.OBJECT_STORE_1, function(objectStore){
+	var index = objectStore.index("IntIndex");
+	var indexCursorReq = index.openCursor();
+	indexCursorReq.onsuccess = function(){
+		var cursor = indexCursorReq.result;
+		if (cursor) {
+			ok(true, "Iterating over cursor " + cursor.key + " for value " + JSON.stringify(cursor.value))
+			cursor["continue"]();
+		} else {
+			start();
+			nextTest();
+		}
+	};
+	indexCursorReq.onerror = function(){
+		_("Error on cursor request")
+		ok(false, "Could not continue opening cursor");
+		start();
+		nextTest();
+	};
+});
+
+
+openObjectStore("Index Key Cursor", DB.OBJECT_STORE_1, function(objectStore){
+	var index = objectStore.index("IntIndex");
+	var indexCursorReq = index.openKeyCursor();
+	indexCursorReq.onsuccess = function(){
+		var cursor = indexCursorReq.result;
+		if (cursor) {
+			ok(true, "Iterating over cursor " + cursor.key + " for value " + JSON.stringify(cursor.value))
+			cursor["continue"]();
+		} else {
+			start();
+			nextTest();
+		}
+	};
+	indexCursorReq.onerror = function(){
+		_("Error on cursor request")
+		ok(false, "Could not continue opening cursor");
+		start();
+		nextTest();
+	};
+});

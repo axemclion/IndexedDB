@@ -30,6 +30,9 @@
 				return prefix + "-" + JSON.stringify(key);
 			},
 			decode: function(key){
+				if (typeof key === "undefined" || key === null) {
+					return key;
+				}
 				return JSON.parse(key.substring(2));
 			}
 		}

@@ -9,17 +9,16 @@
 	 */
 	function IDBCursor(range, direction, idbObjectStore, cursorRequest, keyColumnName, valueColumnName){
 		this.__range = range;
-		this.__idbObjectStore = idbObjectStore;
+		this.source = this.__idbObjectStore = idbObjectStore;
 		this.__req = cursorRequest;
 		
 		this.key = undefined;
 		this.direction = direction;
-		this.source = this.idbObjectStore;
 		
 		this.__keyColumnName = keyColumnName;
 		this.__valueColumnName = valueColumnName;
 		
-		if (!this.__idbObjectStore.transaction.__active) idbModules.util.throwDOMException("TransactionInactiveError - The transaction this IDBObjectStore belongs to is not active.");
+		if (!this.source.transaction.__active) idbModules.util.throwDOMException("TransactionInactiveError - The transaction this IDBObjectStore belongs to is not active.");
 		
 		// Setting this to -1 as continue will set it to 0 anyway
 		this.__offset = -1;
@@ -30,8 +29,9 @@
 		var me = this;
 		var sql = ["SELECT * FROM ", me.__idbObjectStore.name];
 		var sqlValues = [];
+		sql.push("WHERE ", me.__keyColumnName, " NOT NULL");
 		if (me.__range && (me.__range.lower || me.__range.upper)) {
-			sql.push("WHERE");
+			sql.push("AND");
 			if (me.__range.lower) {
 				sql.push("key " + (me.__range.lowerOpen ? "<=" : "<") + " ?");
 				sqlValues.push(me.__range.lower);
@@ -42,7 +42,7 @@
 				sqlValues.push(me.__range.upper);
 			}
 		}
-		
+		sql.push(" ORDER BY ", me.__keyColumnName);
 		if (typeof key !== "undefined") {
 			sql.push((me.__range && (me.__range.lower || me.__range.upper)) ? "AND" : "WHERE")
 			sql.push("key = ?");
@@ -55,7 +55,7 @@
 		tx.executeSql(sql.join(" "), sqlValues, function(tx, data){
 			if (data.rows.length === 1) {
 				var key = idbModules.Key.decode(data.rows.item(0)[me.__keyColumnName]);
-				var val = idbModules.Sca.decode(data.rows.item(0)[me.__valueColumnName]);
+				var val = me.__valueColumnName === "value" ? idbModules.Sca.decode(data.rows.item(0)[me.__valueColumnName]) : idbModules.Key.decode(data.rows.item(0)[me.__valueColumnName]);
 				success(key, val);
 			} else {
 				console.log("Reached end of cursors");
