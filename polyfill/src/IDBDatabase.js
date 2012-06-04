@@ -34,7 +34,7 @@
 			var sql = ["CREATE TABLE", storeName, "(key BLOB", createOptions.autoIncrement ? ", inc INTEGER PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY", ", value BLOB)"].join(" ");
 			console.log(sql);
 			tx.executeSql(sql, [], function(tx, data){
-				tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false, JSON.stringify({})], function(){
+				tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false, "{}"], function(){
 					result.__setReadyState("createObjectStore", true);
 					success(result);
 				}, error);

@@ -23,17 +23,18 @@
 				if (transaction.mode !== 2) {
 					idbModules.util.throwDOMException(0, "Invalid State error, not a version transaction", me.transaction);
 				}
-				var indexes = JSON.parse(me.__idbObjectStore.__storeProps.indexes);
-				if (typeof indexes[indexName] != "undefined") {
-					idbModules.util.throwDOMException(0, "Index already exists on store", indexes);
+				var idxList = JSON.parse(me.__idbObjectStore.__storeProps.indexList);
+				if (typeof idxList[indexName] != "undefined") {
+					idbModules.util.throwDOMException(0, "Index already exists on store", idxList);
 				}
 				var columnName = indexName;
-				indexes[indexName] = {
+				idxList[indexName] = {
 					"columnName": columnName,
 					"keyPath": keyPath,
 					"optionalParams": optionalParameters
 				};
 				// For this index, first create a column
+				me.__idbObjectStore.__storeProps.indexList = JSON.stringify(idxList);
 				var sql = ["ALTER TABLE", me.__idbObjectStore.name, "ADD", columnName, "BLOB"].join(" ");
 				console.log(sql);
 				tx.executeSql(sql, [], function(tx, data){
@@ -52,7 +53,8 @@
 									initIndexForRow(i + 1);
 								}
 							} else {
-								tx.executeSql("UPDATE __sys__ set indexes = ? where name = ?", [JSON.stringify(indexes), me.name], function(){
+								console.log("Updating the indexes in table", me.__idbObjectStore.__storeProps);
+								tx.executeSql("UPDATE __sys__ set indexList = ? where name = ?", [me.__idbObjectStore.__storeProps.indexList, me.__idbObjectStore.name], function(){
 									me.__idbObjectStore.__setReadyState("createIndex", true);
 									success(me);
 								}, error);
@@ -62,25 +64,6 @@
 				}, error);
 			}, "createObjectStore");
 		});
-	};
-	
-	IDBIndex.prototype.__deleteIndex = function(indexName){
-		var transaction = me.__idbObjectStore.transaction;
-		transaction.__addToTransactionQueue(function(tx, args, success, failure){
-			me.__waitForReady(function(){
-				me.__idbObjectStore.__getStoreProps(tx, function(){
-					var indexes = JSON.parse(me.__storeProps.indexes);
-					if (typeof indexes[indexName] === "undefined") {
-						idbModules.util.throwDOMException(0, "Index does not  exist on store", indexes);
-					}
-					tx.executeSql("UPDATE __sys__ set indexes = ? where name = ?", [JSON.stringify(indexes), me.name], function(){
-						me.__setReadyState("createIndex", true);
-						success(result);
-					}, error);
-				});
-			});
-		});
-		
 	};
 	
 	IDBIndex.prototype.openCursor = function(range, direction){
@@ -102,8 +85,9 @@
 			var sqlValues = [];
 			if (typeof key !== "undefined") {
 				sql.push("AND", me.indexName, " = ?");
-				sqlValues.push(idbModules.Key.encode("key"));
+				sqlValues.push(idbModules.Key.encode(key));
 			}
+			console.log("Trying to fetch data for Index", sql.join(" "), sqlValues);
 			tx.executeSql(sql.join(" "), sqlValues, function(tx, data){
 				var d;
 				if (typeof opType === "count") {

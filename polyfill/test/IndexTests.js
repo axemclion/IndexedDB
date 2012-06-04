@@ -111,8 +111,8 @@ openObjectStore("Index Get", DB.OBJECT_STORE_1, function(objectStore){
 	var index = objectStore.index("IntIndex");
 	var req = index.get(value.Int);
 	req.onsuccess = function(){
-		equal(req.result, value, "Got key from Index Get");
-		_("Got " + req.result + " from index get");
+		deepEqual(req.result, value, "Got object from Index Get");
+		console.log("Got ", req.result, value);
 		start();
 		nextTest();
 	};
@@ -123,3 +123,22 @@ openObjectStore("Index Get", DB.OBJECT_STORE_1, function(objectStore){
 		nextTest();
 	};
 });
+
+
+openObjectStore("Index Get Key", DB.OBJECT_STORE_1, function(objectStore){
+	var index = objectStore.index("IntIndex");
+	var req = index.getKey(value.Int);
+	req.onsuccess = function(){
+		equal(req.result, key, "Got key from Index Get");
+		console.log("Got ", req.result, value);
+		start();
+		nextTest();
+	};
+	req.onerror = function(){
+		_("Error on cursor request")
+		ok(false, "Could not continue opening cursor");
+		start();
+		nextTest();
+	};
+});
+

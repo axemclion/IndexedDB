@@ -40,7 +40,6 @@
 		}
 		
 		if (ready) {
-			console.log("Ready", this.__ready);
 			callback();
 		} else {
 			console.log("Waiting for to be ready", key);
@@ -59,13 +58,20 @@
 		var me = this;
 		this.__waitForReady(function(){
 			if (me.__storeProps) {
+				//console.log("Store properties - cached", me.__storeProps);
 				callback(me.__storeProps);
 			} else {
 				tx.executeSql("SELECT * FROM __sys__ where name = ?", [me.name], function(tx, data){
 					if (data.rows.length !== 1) {
 						callback();
 					} else {
-						me.__storeProps = data.rows.item(0);
+						me.__storeProps = {
+							"name": data.rows.item(0).name,
+							"indexList": data.rows.item(0).indexList,
+							"autoInc": data.rows.item(0).autoInc,
+							"keyPath": data.rows.item(0).keyPath
+						}
+						//console.log("Store properties", me.__storeProps);
 						callback(me.__storeProps);
 					}
 				}, function(){
@@ -141,7 +147,7 @@
 		if (typeof primaryKey !== "undefined") {
 			paramMap["key"] = idbModules.Key.encode(primaryKey);
 		}
-		var indexes = JSON.parse(this.__storeProps.indexes);
+		var indexes = JSON.parse(this.__storeProps.indexList);
 		for (var key in indexes) {
 			try {
 				paramMap[indexes[key].columnName] = idbModules.Key.encode(eval("value['" + indexes[key].keyPath + "']"));

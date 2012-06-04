@@ -52,7 +52,7 @@
 				}
 				
 				db.transaction(function(tx){
-					tx.executeSql("CREATE TABLE IF NOT EXISTS __sys__ (name VARCHAR(255), keyPath VARCHAR(255), autoInc BOOLEAN, indexes BLOB)", [], function(){
+					tx.executeSql("CREATE TABLE IF NOT EXISTS __sys__ (name VARCHAR(255), keyPath VARCHAR(255), autoInc BOOLEAN, indexList BLOB)", [], function(){
 						tx.executeSql("SELECT * FROM __sys__", [], function(tx, data){
 							var e = idbModules.Event("success");
 							req.source = req.result = new idbModules.IDBDatabase(db, name, version, data);
