@@ -49,9 +49,10 @@ function openObjectStore(name, storeName, callback){
 	});
 }
 
+var key = sample.integer();
+var value = sample.obj()
 openObjectStore("Adding data after index is created", DB.OBJECT_STORE_1, function(objectStore){
-	var key = sample.integer();
-	var addReq = objectStore.add(sample.obj(), key);
+	var addReq = objectStore.add(value, key);
 	addReq.onsuccess = function(e){
 		equal(key, addReq.result, "Data successfully added");
 		_("Added to datastore with index " + key);
@@ -64,7 +65,6 @@ openObjectStore("Adding data after index is created", DB.OBJECT_STORE_1, functio
 		nextTest();
 	};
 });
-
 openObjectStore("Index Cursor", DB.OBJECT_STORE_1, function(objectStore){
 	var index = objectStore.index("IntIndex");
 	var indexCursorReq = index.openCursor();
@@ -86,7 +86,6 @@ openObjectStore("Index Cursor", DB.OBJECT_STORE_1, function(objectStore){
 	};
 });
 
-
 openObjectStore("Index Key Cursor", DB.OBJECT_STORE_1, function(objectStore){
 	var index = objectStore.index("IntIndex");
 	var indexCursorReq = index.openKeyCursor();
@@ -101,6 +100,23 @@ openObjectStore("Index Key Cursor", DB.OBJECT_STORE_1, function(objectStore){
 		}
 	};
 	indexCursorReq.onerror = function(){
+		_("Error on cursor request")
+		ok(false, "Could not continue opening cursor");
+		start();
+		nextTest();
+	};
+});
+
+openObjectStore("Index Get", DB.OBJECT_STORE_1, function(objectStore){
+	var index = objectStore.index("IntIndex");
+	var req = index.get(value.Int);
+	req.onsuccess = function(){
+		equal(req.result, value, "Got key from Index Get");
+		_("Got " + req.result + " from index get");
+		start();
+		nextTest();
+	};
+	req.onerror = function(){
 		_("Error on cursor request")
 		ok(false, "Could not continue opening cursor");
 		start();

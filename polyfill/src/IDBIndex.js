@@ -95,16 +95,41 @@
 		return cursorRequest;
 	};
 	
-	IDBIndex.prototype.get = function(key){
+	IDBIndex.prototype.__fetchIndexData = function(key, opType){
+		var me = this;
+		return me.__idbObjectStore.transaction.__addToTransactionQueue(function(tx, args, success, error){
+			var sql = ["SELECT * FROM ", me.__idbObjectStore.name, " WHERE", me.indexName, "NOT NULL"];
+			var sqlValues = [];
+			if (typeof key !== "undefined") {
+				sql.push("AND", me.indexName, " = ?");
+				sqlValues.push(idbModules.Key.encode("key"));
+			}
+			tx.executeSql(sql.join(" "), sqlValues, function(tx, data){
+				var d;
+				if (typeof opType === "count") {
+					d = data.rows.length;
+				} else if (data.rows.length === 0) {
+					d = undefined;
+				} else if (opType === "key") {
+					d = idbModules.Key.decode(data.rows.item(0).key);
+				} else { // when opType is value
+					d = idbModules.Sca.decode(data.rows.item(0).value);
+				}
+				success(d);
+			}, error);
+		});
+	}
 	
+	IDBIndex.prototype.get = function(key){
+		return this.__fetchIndexData(key, "value");
 	};
 	
 	IDBIndex.prototype.getKey = function(key){
-	
+		return this.__fetchIndexData(key, "key");
 	};
 	
 	IDBIndex.prototype.count = function(key){
-	
+		return this.__fetchIndexData(key, "count");
 	};
 	
 	idbModules["IDBIndex"] = IDBIndex;

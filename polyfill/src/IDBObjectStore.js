@@ -207,7 +207,7 @@
 				tx.executeSql("SELECT * FROM " + me.name + " where key = ?", [primaryKey], function(tx, data){
 					console.log("Fetched data", data.rows.item(0));
 					try {
-						success(JSON.parse(data.rows.item(0).value));
+						success(idbModules.Sca.decode(data.rows.item(0).value));
 					} catch (e) {
 						console.log(e)
 						// If no result is returned, or error occurs when parsing JSON
