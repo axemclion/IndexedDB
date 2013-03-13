@@ -1,102 +1,209 @@
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <link href="style.css" type="text/css" rel="stylesheet"/>
-        <title>IndexedDB Tools and Experiments</title>
-    </head>
-    <body>
-        <div id = "content-wrap">
-            <h1>IndexedDB Tools and Experiments</h1>
-            <div id = "content">
-                <div>
-                    My Experiments with IndexeddB [<a href = "http://blog.nparashuram.com/search/label/indexeddb">Blog posts</a>]
-                </div>
-                <div>
-                    <h2>Try out the IndexedDB API</h2>
-                    <a href = "/IndexedDB/trialtool/index.html">IndexedDB API playground</a>. 
-                    <br/>
-                    Examples for Firefox, Chrome and Internet Explorer.
-                    <ul style="line-height:1.5em">
-                        <li>
-                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/moz_indexedDB.html">Firefox 10.0.2 to 12.0a2 (2012-03-05)</a>
-                        </li>
-                        <li>
-                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/ie10.html">Internet Explorer 10 on Windows 8</a>
-                        </li>
-                        <li>
-                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/webkitIndexedDB.html">Google Chrome 13.0.778.0 canary</a>
-                        </li>
-                        <li>
-                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/all.html">All examples together</a>
-                        </li>
-                        <li>
-                            <a href = "/trialtool/index.html#example=/IndexedDB/trialtool/ie.html">Internet 8+ with IndexedDB prototype</a>
-                        </li>
-                    </ul>
-                </div>
-                <div>
-                    <h2>LINQ API for IndexedDB</h2>
-                    IndexedDB API does not support queries. 
-                    <br/>
-                    Check out the <a href = "http://nparashuram.com/Linq2IndexedDB/">LINQ API for IndexedDB</a>
-                </div>
-                <div>
-                    <h2>Jquery IndexedDB Plugin</h2>
-                    Use the IndexedDB API with Jquery with the <a href = "http://nparashuram.com/jquery-indexeddb/index.html">JQuery Plugin for IndexedDB</a>
-                    <ul style="line-height:1.5em">
-                        <li>
-                            <a href = "/jquery-indexeddb/jquery.indexeddb.js">jquery.indexeddb.js</a>
-                        </li>
-                        <li>
-                            <a href = "/jquery-indexeddb/example/index.html">Sample application</a>
-                        </li>
-                        <li>
-                            <a href = "/jquery-indexeddb/test/">Test Suite</a>
-                        </li>
-                        <li>
-                            <a href = "https://github.com/axemclion/jquery-indexeddb/blob/gh-pages/docs/README.md">Documentation</a>
-                        </li>
-                    </ul>
-                </div>
-                <div>
-                    <h2>IndexedDB Polyfill</h2>
-                    IndexedDB is not yet supported by all browsers. Use the IndexedDB polyfill built on WebSQL. [work in progress]
-                    <br/>
-                    Check out the <a href = "/IndexedDBShim/index.html">IndexedDB polyfill</a>
-                </div>
-                <div>
-                    <h2>Presentations</h2>
-                    <div>
-                        Some of my talks and presentations on IndexedDB
-                    </div>
-                    <ul>
-                        <li>
-                            <a href = "http://blog.nparashuram.com/2011/03/tutorial-on-indexed-db-zeollar-session.html">IndexedDB talk on Zeollar</a>
-                        </li>
-                        <li>
-                            <a href = "http://blog.nparashuram.com/2011/11/jsfoo-bangalore-session-videos-and.html">IndexedDB Designing the API</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Parashuram's IndexedDB Experiments</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Parashuram's experiments with IndexedDB - with IndexedDB Polyfill, various libraries and tech talks"/>
+  <meta name="author" content="Parashuram code@nparashuram.com"/>
+  <!-- Le styles -->
+  <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+  <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+<body>
+
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="#">IndexedDB</a>
+        <div class="nav-collapse collapse">
+          <ul class="nav">
+            <li class="active">
+              <a href="#">Home</a>
+            </li>
+            <li>
+              <a href="//nparashuram.com">About Me</a>
+            </li>
+            <li>
+              <a href="//nparashuram.com/contact.html">Contact</a>
+            </li>
+            <li class="dropdown">
+              <a href="" class="dropdown-toggle" data-toggle="dropdown">
+                Quick Links <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="//nparashuram.com/IndexedDBShim">IndexedDB Polyfill</a>
+                </li>
+                <li>
+                  <a href="http://www.w3.org/TR/IndexedDB/">IndexedDB Specification</a>
+                </li>
+                <li>
+                  <a href="http://blog.nparashuram.com/search/label/indexeddb">Blog posts on IndexedDB</a>
+                </li>
+                <li class="divider"></li>
+                <li class="nav-header">IndexedDB Libraries</li>
+                <li>
+                  <a href="//nparashuram.com/jquery-indexeddb">Jquery IndexedDB</a>
+                </li>
+                <li>
+                  <a href="//pouchdb.com">PouchDB</a>
+                </li>
+                <li>
+                  <a href="//github.com/superfeedr/indexeddb-backbonejs-adapter">Backbone-IndexedDB</a>
+                </li>
+                <li>
+                  <a href="//nparashuram.com/Linq2IndexedDB">LINQ IndexedDB</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
         </div>
-        <a href="http://github.com/axemclion/IndexedDB"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://a248.e.akamai.net/camo.github.com/bec6c51521dcc8148146135149fe06a9cc737577/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub"></a>
-        <script type="text/javascript">
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-617499-9']);
-            _gaq.push(['_setDomainName', 'none']);
-            _gaq.push(['_setAllowLinker', true]);
-            _gaq.push(['_trackPageview']);
-            
-            (function(){
-            	var ga = document.createElement('script');
-            	ga.type = 'text/javascript';
-            	ga.async = true;
-            	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            	var s = document.getElementsByTagName('script')[0];
-            	s.parentNode.insertBefore(ga, s);
-            })();
-        </script>
-    </body>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="hero-unit">
+      <h1>
+        <small>My experiments with</small>
+        IndexedDB
+      </h1>
+      <p>
+        IndexedDB is a client side storage mechanism for storing large amounts of data with support for transactions and indexing. This github project is a list of my experiments with the IndexedDB implementation in various browsers. I have also
+        <a href = "http://blog.nparashuram.com/search/label/indexeddb">blogged</a>
+        about my experiments.
+      </p>
+      <p>
+        <a href="trialtool" class="btn btn-primary btn-large">See IndexedDB Playground   &raquo;</a>
+      </p>
+
+    </div>
+    <div class = "muted">
+      The IndexedDB specification and its implementation in various browsers have been changing, and you can see the archived versions of the examples in the API playground
+      <a href = "#" data-toggle="collapse" data-target="#demo" >here   &raquo;</a>
+      <ul id="demo" class="collapse list-style">
+        <li>
+          <a href = "http://nparashuram.com/trialtool/index.html#example=/IndexedDB/trialtool/moz_indexedDB.html">Firefox 10.0.2 to 12.0a2 (2012-03-05)</a>
+        </li>
+        <li>
+          <a href = "http://nparashuram.com/trialtool/index.html#example=/IndexedDB/trialtool/webkitIndexedDB.html">Google Chrome with setVersion</a>
+        </li>
+        <li>
+          <a href = "http://nparashuram.com/trialtool/index.html#example=/IndexedDB/trialtool/ie10.html">Internet Explorer 10 - standard</a>
+        </li>
+        <li>
+          <a href = "http://nparashuram.com/trialtool/index.html#example=/IndexedDB/trialtool/ie.html">Internet Explore 8 - IndexedDB prototype</a>
+        </li>
+      </ul>
+    </div>
+    <div class="row">
+      <div class="span4">
+        <h2>IndexedDB Polyfill</h2>
+        <p>
+          The API is not
+          <a href="http://caniuse.com/indexeddb/embed/" target="_blank">supported all browsers</a>
+          .
+          However, unsupported browser do implement WebSQL, another (deprecated) standard for client side storage. The IndexedDB Polyfill is an implementation of the IndexedDB API on top of the WebSQL API in Javascript. Using the polyfill, you can write IndexedDB code and run them on unsupported browsers and even on mobile devices. Try running the
+          <a href = "http://nparashuram.com/IndexedDBShim/test/index.html" target="_blank">tests</a>
+          on an unsupported browser.
+        </p>
+        <p>
+          <a class="btn" href="//nparashuram.com/IndexedDBShim" target="_blank">View Project &raquo;</a>
+        </p>
+      </div>
+      <div class="span4">
+        <h2>Jquery-IndexedDB</h2>
+        <p>
+          The IndexedDB API seems verbose and I wanted to make it simpler to use. Here is an implementation of the API as a jquery plugin that makes using the API simpler. It uses the jquery friendly patterns like promises, method chaining, etc, to make the API easier to use. You can also look at the
+          <a href = "https://github.com/axemclion/jquery-indexeddb/blob/gh-pages/docs/README.md" target="_blank">API documentation</a>
+          or an
+          <a href = "http://nparashuram.com/jquery-indexeddb/example/index.html" target="_blank">example app</a>
+          . The plugin also has
+          <a href = "http://nparashuram.com/jquery-indexeddb/test/" target="_blank">tests</a>
+          that you can run to see if it works for you.
+        </p>
+        <p>
+          <a class="btn" href="//nparashuram.com/jquery-indexeddb">View Project &raquo;</a>
+        </p>
+      </div>
+      <div class="span4">
+        <h2>This project</h2>
+        <p>
+          This project is hosted on github and has examples and sample code on how to use the raw IndexedDB API. The implementations of various browsers have changed, and the project also has versions specific to each browser. You can explore the project on github
+        </p>
+        <p>
+          <a class="btn" href="//github.com/axemclion/IndexedDB">View on Github &raquo;</a>
+        </p>
+      </div>
+    </div>
+    <div class = "row">
+      <div class = "span4">
+        <h2>Other libraries</h2>
+        <p>
+          I have also been helping other libraries that use IndexedDB libraries. Here are some of them
+        </p>
+        <ul>
+          <li>
+            <a href = "http://pouchdb.com">PouchDB</a>
+          </li>
+          <li>
+            <a href = "http://github.com/superfeedr/indexeddb-backbonejs-adapter">Backbone IndexedDB Adapter</a>
+          </li>
+          <li>
+            <a href = "http://nparashuram.com/Linq2IndexedDB">LINQ for IndexedDB</a>
+          </li>
+        </ul>
+      </div>
+      <div class = "span8">
+        <h2>Tech Talks</h2>
+        <ul class="thumbnails">
+          <li class="span2">
+            <a class="thumbnail" href = "http://blog.nparashuram.com/2013/02/w3conf-session-on-indexeddb.html">
+              <img class="img-rounded" src= "http://img.youtube.com/vi/r8xl9iSAXO0/0.jpg">
+              <p class="text-center">W3Conf</p>
+            </a>
+          </li>
+          <li class="span2">
+            <a class="thumbnail" href="http://blog.nparashuram.com/2013/02/html5devconf-3-session-on-using-client.html">
+              <img class="img-rounded" src= "http://img.youtube.com/vi/OFvL-hU9OMk/0.jpg">
+              <p class="text-center">HTML5DevConf</p>
+            </a>
+          </li>
+          <li class="span2">
+            <a class="thumbnail" href = "http://blog.nparashuram.com/2012/09/sfhtml5-session-on-indexeddb-video.html">
+              <img class="img-rounded" src= "http://img.youtube.com/vi/XlSizz7JHBg/0.jpg">
+              <p  class="text-center">SFHTML5 Meetup</p>
+            </a>
+          </li>
+          <li class="span2">
+            <a class="thumbnail" href = "http://blog.nparashuram.com/2011/11/jsfoo-bangalore-session-videos-and.html">
+              <img class="img-rounded" src= "http://img.youtube.com/vi/yZ4GBSk2aKQ/0.jpg">
+              <p class="text-center">Doctype HTML5</p>
+            </a>
+          </li>
+          <li class="span2">
+            <a class="thumbnail" href = "http://blog.nparashuram.com/2011/03/tutorial-on-indexed-db-zeollar-session.html">
+              <img class="img-rounded" src= "http://img.youtube.com/vi/xeu464xrjsw/0.jpg">
+              <p class="text-center">Zeollar</p>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <hr>
+
+    <footer>
+      <p></p>
+    </footer>
+
+  </div>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+
+</body>
 </html>
