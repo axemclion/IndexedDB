@@ -1,83 +1,687 @@
 <html>
-    <head>
-        <title>IndexedDB Implementations</title>
-        <style type="text/css">
-            html {
-                overflow: auto;
-                background: #6788AD;
-            }
-            
-            body {
-                font-family: Geneva, Verdana, Arial, Helvetica, sans-serif;
-                margin: 0 auto 0 auto;
-                width: 75%;
-                background-color: white;
-                -moz-box-shadow: 0 0 1.5em #122F4B;
-                -webkit-box-shadow: 0 0 1.5em #122F4B;
-                box-shadow: 0 0 1.5em #122F4B;
-                overflow: auto;
-            }
-            
-            h1 {
-                padding: 1%;
-                background-color: #122F4B;
-                color: white;
-                font-family: Georgia, "Times New Roman", Times;
-                font-weight: normal;
-                text-align: center;
-                padding: 20px 0;
-                margin: 0;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>IndexedDB API Playground</h1>
-        <div style ="padding : 1em">
-            <div>
-                This page illustrates the <a target = "_blank" href = "http://dvcs.w3.org/hg/IndexedDB/raw-file/tip/Overview.html">IndexedDB</a>
-                with examples in <a target="_blank" href= "http://nparashuram.com/projects/trialtool.html" target = "_blank">TrialTool</a>. 
-            </div>
-            <div>
-                More details on the <a target="_blank" href="http://blog.nparashuram.com/search/label/indexeddb" target = "_blank">blog</a>
-            </div>
-            <ul style="line-height:1.5em">
-                <li>
-                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/moz_indexedDB.html">Firefox 10.0.2 to 12.0a2 (2012-03-05)</a>
-                </li>
-                <li>
-                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/ie10.html">Internet Explorer 10 on Windows 8</a>
-                </li>
-                <li>
-                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/webkitIndexedDB.html">Google Chrome 13.0.778.0 canary</a>
-                </li>
-                <li>
-                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/all.html">All examples together</a>
-                </li>
-                <li>
-                    <a target="_blank" href= "/trialtool/index.html#example=/IndexedDB/trialtool/ie.html">Internet 8+ with IndexedDB prototype</a>
-                </li>
-            </ul>
-            <h4>Note that the IndexedDB standards and implementations are changing. These examples are tested against the specified versions only. </h4>
-            <hr/>
-			<h4>You should also check out my <a target="_blank" href= "http://nparashuram.com/IndexedDB">other projects</a> related to IndexedDB</h4>
-            <h5>You can also follow my <a target="_blank" href= "http://blog.nparashuram.com/search/label/indexeddb">blog</a> for updates</h5>
-        </div>
-        <script type="text/javascript">
-            
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-617499-9']);
-            _gaq.push(['_setDomainName', 'github.com']);
-            _gaq.push(['_setAllowLinker', true]);
-            _gaq.push(['_trackPageview']);
-            
-            (function(){
-            	var ga = document.createElement('script');
-            	ga.type = 'text/javascript';
-            	ga.async = true;
-            	ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            	var s = document.getElementsByTagName('script')[0];
-            	s.parentNode.insertBefore(ga, s);
-            })();
-        </script>
-    </body>
+<head>
+    <title>IndexedDB API Playground</title>
+</head>
+<body>
+    <ul>
+        <li class = "example-set">
+            <a class = "example-set-name">IndexedDB</a>
+            <ul>
+                <li class = "example" id = "prereq">
+                    <a class = "example-name">Pre Requisites</a>
+                    <script type = "text/javascript">
+                            // Initialising the window.IndexedDB Object
+                            window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+
+                            // this is just a global variable
+                            var DAO = DAO || {}; 
+                        </script>
+                    <link class = "example-docs" href = "div#reference>div#prereq"/></li>
+                <li class = "example" id = "db" depends = "prereq">
+                    <a class = "example-name">Open Database</a>
+                    <script type="text/javascript">
+                            write("Trying to open database ...");
+                            var db = null;
+                            try {
+                                var dbOpenRequest = window.indexedDB.open("BookShop1");
+                                dbOpenRequest.onsuccess = function(event){
+                                    db = dbOpenRequest.result;
+                                    DAO.version = db.version;
+                                    var thisDB = db; // Need to create this variable since the variable db is assigned to other things later
+                                    db.onversionchange = function(e){
+                                        write("Version change triggered, so closing database connection", e.oldVersion, e.newVersion, thisDB);
+                                        thisDB.close();
+                                    };
+                                    write("Database Opened", db, event);
+                                    /* Code for ${db.open} */
+                                };
+                                dbOpenRequest.onupgradeneeded = function(e){
+                                    write("Database upgrade needed");
+                                    var db = dbOpenRequest.result;
+                                    var transaction = dbOpenRequest.transaction;
+                                    /* Code for ${db.upgrade} */
+                                };
+                                dbOpenRequest.onerror = function(e){
+                                    write("DB Open Request Error");
+                                };
+                                dbOpenRequest.onblocked = function(e){
+                                    write("DB Open Request Blocked");
+                                };
+                            } catch (e) {
+                                writeError(e);
+                            }
+                        </script>
+                    <link class = "example-docs" href = "div#reference>div#openDatabase"/></li>
+                <li class = "example" id = "dbVersion" depends = "prereq">
+                    <a class = "example-name">Open DB with version+1</a>
+                    <script type="text/javascript">
+                            var version = DAO.version ? DAO.version + 1 : 1;
+                            var db = null;
+                            write("Trying to open database with version", version);
+                            try {
+                                var dbOpenRequest = window.indexedDB.open("BookShop1", version);
+                                dbOpenRequest.onsuccess = function(event){
+                                    db = dbOpenRequest.result;
+                                    DAO.version = db.version;
+                                    var thisDB = db; // Need to create this variable since the variable db is assigned to other things later
+                                    db.onversionchange = function(e){
+                                        write("Version change triggered, so closing database connection", e.oldVersion, e.newVersion, thisDB);
+                                        thisDB.close();
+                                    };
+                                    write("Database Opened", db, event);
+                                    /* Code for ${db.open} */
+                                };
+                                dbOpenRequest.onupgradeneeded = function(e){
+                                    write("Database upgrade needed");
+                                    var db = dbOpenRequest.result;
+                                    var transaction = dbOpenRequest.transaction;
+                                    /* Code for ${db.upgrade} */
+                                };
+                                dbOpenRequest.onerror = function(e){
+                                    write("DB Open Request Error", dbOpenRequest.error);
+                                };
+                                dbOpenRequest.onblocked = function(e){
+                                    write("DB Open Request Blocked");
+                                    writeError(e);
+                                };
+                            } catch (e) {
+                                writeError(e);
+                            }
+                        </script>
+                    <link class = "example-docs" href = "div#reference>div#openDatabase"/></li>
+                <li class = "example" id = "deleteDB" depends = "prereq">
+                    <a class = "example-name">Delete Database</a>
+                    <script type="text/javascript">
+                            write("Trying to delete database");
+                            try {
+                                var dbDeleteRequest = window.indexedDB.deleteDatabase("BookShop1");
+                                dbDeleteRequest.onsuccess = function(e){
+                                    write("Database successfully deleted");
+                                    /* Code for ${db.open} */
+                                };
+                                dbDeleteRequest.onupgradeneeded = function(e){
+                                    var db = dbOpenRequest.result;
+                                    write("Database upgrade needed");
+                                    /* Code for ${db.upgrade} */
+                                };
+                                dbDeleteRequest.onerror = function(e){
+                                    write("Error deleting DB");
+                                    writeError(e);
+                                };
+                                dbDeleteRequest.onblocked = function(e){
+                                    write("Deleting DB Blocked. Try closing the database and then deleting it", dbDeleteRequest.error, e.type);
+                                };
+                            } catch (e) {
+                                writeError(e);
+                            }
+                        </script>
+                    <link class = "example-docs" href = "div#reference>div#deleteDatabase"/></li>
+                <li class = "example" depends = "db.open">
+                    <a class = "example-name">Close Database</a>
+                    <script type="text/javascript">
+                            write("Closing Database");
+                            db.close();
+                        </script>
+                    <link class = "example-docs" href = "div#reference>div#closeDatabase"/></li>
+            </li>
+            <li class = "example-set">
+                <a class = "example-set-name">Object Stores</a>
+                <ul>
+                    <li class = "example" depends = "dbVersion" id = "createObjectStore" insertAt = "db.upgrade">
+                        <a class = "example-name">Create Object store</a>
+                        <script type = "text/javascript">
+                                    write("Trying to create a new object store");
+                                    // the db object was opened in the upgradeNeeded method
+                                    try {
+                                        var objectStore = db.createObjectStore("ObjectStore_BookList", {
+                                            "keyPath": "id",
+                                            "autoIncrement": true
+                                        });
+                                    } catch (e) {
+                                        write("An error occured when creating object store");
+                                        writeError(e);
+                                    }
+                                    write("Object Store created", objectStore);
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#createObjectStore"/></li>
+                    <li class = "example" depends = "dbVersion" id = "deleteObjectStore" insertAt = "db.upgrade">
+                        <a class = "example-name">Delete Object store</a>
+                        <script type = "text/javascript">
+                                    // the db object was opened in the upgradeNeeded method
+                                    db.deleteObjectStore("ObjectStore_BookList");
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#deleteObjectStore"></li>
+                    <li class = "example" depends = "db" insertAt = "db.open">
+                        <a class = "example-name">List ObjectStores</a>
+                        <script type = "text/javascript">write("List of Object Stores", db.objectStoreNames);</script>
+                        <link class = "example-docs" href = "div#reference>div#getAllStores"/></li>
+                    <li class = "example" id = "transaction" depends = "db" insertAt = "db.open">
+                        <a class = "example-name">Create Transaction</a>
+                        <script type = "text/javascript">
+                                    write("Opening a new transaction.");
+                                    try {
+                                        var transaction = db.transaction(["ObjectStore_BookList"], "readwrite");
+                                        write("Transaction created", transaction);
+                                        transaction.oncomplete = function(e){
+                                            write("Transaction Complete");
+                                        };
+                                        transaction.onabort = function(e){
+                                            write("Transaction Aborted");
+                                        };
+                                        transaction.onerror = function(e){
+                                            write("Transaction Error");
+                                        };
+                                        
+                                        /* Code for ${transaction.create}*/
+                                    
+                                    } catch (e) {
+                                        write("Could not open transaction");
+                                        writeError(e);
+                                    }
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#createTransaction"/></li>
+                    <li class = "example" depends = "transaction" insertAt = "transaction.create">
+                        <a class = "example-name">Abort Transaction</a>
+                        <script type = "text/javascript">
+                                    write("Aborting new transaction.");
+                                    try {
+                                        transaction.abort();
+                                    } catch (e) {
+                                        write("Could not abort  transaction");
+                                        writeError(e);
+                                    }
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#abortTransaction"/></li>
+                    <li class = "example" id = "objectStore" depends = "transaction" insertAt = "transaction.create">
+                        <a class = "example-name">Open Object Stores</a>
+                        <script type = "text/javascript">
+                                    write("Opening an Object Store using a transaction.");
+                                    try {
+                                        var objectStore = transaction.objectStore("ObjectStore_BookList");
+                                        write("Object Store opened", objectStore);
+                                        /* Code for ${objectStore.open}*/
+                                    } catch (e) {
+                                        write("Could not open objectStore. You may have to create it first");
+                                        writeError(e);
+                                    }
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#openObjectStore"/></li>
+                    <li class = "example-set">
+                        <a class = "example-set-name">Data Operations</a>
+                        <ul>
+                            <li class = "example" id = "saveData" depends = "objectStore" insertAt = "objectStore.open">
+                                <a class = "example-name">Add Data</a>
+                                <script type = "text/javascript">
+                                            var objectId = new Date().getTime()
+                                            var data = {
+                                                "bookName": "Book-" + Math.random(),
+                                                "author": "asdasd",
+                                                "price": parseInt(Math.random() * 1000),
+                                                "rating": (Math.random() > 0.5 ? "good" : "bad"),
+                                                "id": objectId
+                                            };
+                                            
+                                            write("Trying to save...", data);
+                                            var request = objectStore.add(data);
+                                            request.onsuccess = function(event){
+                                                write("Saved id ", request.result);
+                                                DAO.objectId = request.result;
+                                                DAO.priceIndexVal = data.price;
+                                            };
+                                            request.onerror = function(e){
+                                                writeError(e);
+                                                transaction.abort();
+                                            };
+                                        </script>
+                                <link class = "example-docs" href = "div#reference>div#save"/></li>
+                            <li class = "example" depends = "objectStore" insertAt = "objectStore.open">
+                                <a class= "example-name">Get Data</a>
+                                <script type="text/javascript">
+                                            write(DAO.objectId ? "Trying to get the last saved object using saved example with id " + DAO.objectId : "No Object ID found. Run the 'Add Data example first'");
+                                            var request = objectStore.get(DAO.objectId);
+                                            request.onsuccess = function(event){
+                                                write("Got data ", request.result);
+                                                DAO.objectId = request.result.id;
+                                            };
+                                            request.onerror = function(e){
+                                                write("Could not get object");
+                                                writeError(e);
+                                            };
+                                        </script>
+                                <link class = "example-docs" href = "div#reference>div#get"/></li>
+                            <li class = "example" depends = "objectStore" insertAt = "objectStore.open">
+                                <a class = "example-name">Modify data</a>
+                                <script type="text/javascript">
+                                            var modifiedData = {
+                                                "bookName": "Modified-" + Math.random(),
+                                                "new_prop": "Modified",
+                                                "rating": (Math.random() > 0.5 ? "good" : "bad"),
+                                                "id": DAO.objectId
+                                            };
+                                            write(DAO.objectId ? "Trying to modify the last saved object": "Run the 'Add Data' example first");
+                                            var request = objectStore.put(modifiedData);
+                                            request.onsuccess = function(event){
+                                                write("Modified id ", request.result);
+                                                DAO.objectId = request.result;
+                                            };
+                                            request.onerror = function(e){
+                                                writeError(e);
+                                            };
+                                        </script>
+                                <link class = "example-docs" href = "div#reference>div#modify"/></li>
+                            <li class = "example" depends = "objectStore" insertAt = "objectStore.open">
+                                <a class= "example-name">Delete Data</a>
+                                <script type="text/javascript">
+                                            write("Trying to delete the last saved object with Id ", DAO.objectId);
+                                            var request = objectStore["delete"](DAO.objectId);
+                                            request.onsuccess = function(event){
+                                                write("Removed id ", request.result);
+                                                delete DAO.objectId;
+                                            };
+                                            request.onerror = function(){
+                                                write("Could not delete object");
+                                            };
+                                        </script>
+                                <link class = "example-docs" href = "div#reference>div#delete"></li>
+                            <li class = "example" depends = "objectStore" insertAt = "objectStore.open">
+                                <a class = "example-name">Count</a>
+                                <script type = "text/javascript">
+                                            write("Counting data ... ");
+                                            var request = objectStore.count();
+                                            request.onsuccess = function(e){
+                                                write("Total objects in store", request.result);
+                                            };
+                                            request.onerror = function(e){
+                                                write("Could not count objects in store");
+                                            };
+                                        </script>
+                                <link class = "example-docs" href = "div#reference>div#getAllData"/></li>
+                            <li class = "example" depends = "objectStore" insertAt = "objectStore.open">
+                                <a class= "example-name">Clear ObjectStore</a>
+                                <script type="text/javascript">
+                                            write("Trying to delete all objects in object store...", DAO.objectId);
+                                            var request = objectStore.clear();
+                                            request.onsuccess = function(event){
+                                                write("Cleared ObjectStore", objectStore);
+                                            };
+                                            request.onerror = function(){
+                                                write("Could not delete object");
+                                            };
+                                        </script>
+                                <link class = "example-docs" href = "div#reference>div#clearObjectStore"/></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li class = "example-set">
+                <a class = "example-set-name">Cursors</a>
+                <ul>
+                    <li class = "example" id = "cursor" depends = "objectStore" insertAt = "objectStore.open">
+                        <a class = "example-name">Open Cursor</a>
+                        <script type = "text/javascript">
+                                    // Function to call when a new cursor is required
+                                    var cursor = null;
+                                    try {
+                                        var request = objectStore.openCursor(IDBKeyRange.bound(0, new Date().getTime(), true, false), "next");
+                                        request.onsuccess = function(event){
+                                            cursor = request.result;
+                                            write("Cursor opened", cursor);
+                                            /* Code for ${cursor.open} */
+                                        };
+                                        request.onerror = function(event){
+                                            write("Could not open cursor", request.error);
+                                            writeError(e);
+                                        };
+                                    } catch (e) {
+                                        writeError(e);
+                                    }
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#cursor"/></li>
+                    <li class = "example" depends = "cursor" insertAt = "cursor.open">
+                        <a class = "example-name">Advance cursor</a>
+                        <script type = "text/javascript">
+                                    try {
+                                        if (cursor) {
+                                            write("Value in cursor now is ", cursor.key, cursor.value);
+                                            cursor.advance(2); // jump 2 entries
+                                        }
+                                    } catch (e) {
+                                        writeError(e);
+                                    }
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#cursor_advance"/></li>
+                    <li class = "example" depends = "cursor" insertAt = "cursor.open">
+                        <a class = "example-name">Continue with cursor</a>
+                        <script type = "text/javascript">
+                                    try {
+                                        if (cursor) {
+                                            write("Value in cursor now is ", cursor.key, cursor.value);
+                                            cursor["continue"]();
+                                        }
+                                    } catch (e) {
+                                        writeError(e);
+                                    }
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#cursor_continue"/></li>
+                    <li class = "example" depends = "cursor" insertAt = "cursor.open">
+                        <a class = "example-name">Update data</a>
+                        <script type = "text/javascript">
+                                    try {
+                                        if (cursor) {
+                                            write("Updatine cursor, old values were", cursor.key, cursor.value);
+                                            cursor.update({
+                                                "id": cursor.value.id,
+                                                "newData": new Date().getTime()
+                                            });
+                                        }
+                                    } catch (e) {
+                                        writeError(e);
+                                    }
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#cursor_update"/></li>
+                    <li class = "example" depends = "cursor" insertAt = "cursor.open">
+                        <a class = "example-name">Delete Data</a>
+                        <script type = "text/javascript">
+                                    try {
+                                        if (cursor) {
+                                            write("Deleting cursor", cursor.key);
+                                            cursor["delete"]();
+                                        }
+                                    } catch (e) {
+                                        writeError(e);
+                                    }
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#cursor_remove"/></li>
+                </ul>
+            </li>
+            <li class = "example-set">
+                <a class = "example-set-name">Indexes</a>
+                <ul>
+                    <li class = "example" depends = "objectStore" insertAt = "objectStore.open">
+                        <a class = "example-name">List Indexes</a>
+                        <script type = "text/javascript">
+                                    write("Indexes on the object store are ", objectStore.indexNames);
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#index_names"/></li>
+                    <li class = "example" depends = "dbVersion" insertAt = "db.upgrade">
+                        <a class = "example-name">Create Index</a>
+                        <script type = "text/javascript">
+                                    write("Changing the database version");
+                                    // db has been initialized elsewhere                                    
+                                    var objectStore = transaction.objectStore("ObjectStore_BookList");
+                                    var index = objectStore.createIndex("priceIndex", "price", {
+                                        "unique": false,
+                                        "multiEntry": true
+                                    });
+                                    write("Index created", index);
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#index_create"/></li>
+                    <li class = "example" depends = "dbVersion" insertAt = "db.upgrade">
+                        <a class = "example-name">Delete Index</a>
+                        <script type = "text/javascript">
+                                    write("Changing the database version");
+                                    // db has been initialized elsewhere               
+                                    try {
+                                        var objectStore = transaction.objectStore("ObjectStore_BookList");
+                                        objectStore.deleteIndex("priceIndex");
+                                    } catch (e) {
+                                        writeError(e);
+                                    }
+                                    write("Index deleted");
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#index_remove"/></li>
+                    <li class = "example" depends = "objectStore" id = "index" insertAt = "objectStore.open">
+                        <a class = "example-name">Open Index</a>
+                        <script type = "text/javascript">
+                                    try {
+                                        var index = objectStore.index("priceIndex");
+                                        write("Index opened", index);
+                                    } catch (e) {
+                                        write("Could not open Index, you may have to create it first");
+                                        writeError(e);
+                                    }
+                                    /* Code for ${index.open}*/
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#index_open"/></li>
+                    <li class = "example" depends = "index" insertAt = "index.open">
+                        <a class = "example-name">Get Indexed Object</a>
+                        <script type = "text/javascript">
+                        //
+                            write(DAO.priceIndexVal ? "Getting value with price " + DAO.priceIndexVal : "Not sure what value to get. You may want to 'Add Data' before running this example");
+                            var getReq = index.get(DAO.priceIndexVal);
+                            getReq.onsuccess = function(){
+                            write("Got back object", getReq.result);
+                            };
+                            getReq.onerror = function(){
+                               writeError("Error getting count of objects");
+                                writeError(e); 
+                            };
+                                </script>
+                        <link class = "example-docs" href = "div#reference>div#index_get"/></li>
+                    <li class = "example" depends = "index" insertAt = "index.open">
+                        <a class = "example-name">Get Object on Key</a>
+                        <script type = "text/javascript">
+                        //
+                            write(DAO.priceIndexVal ? "Getting value with price " + DAO.priceIndexVal : "Not sure what value to get. You may want to 'Add Data' before running this example");
+                            var getReq = index.getKey(DAO.priceIndexVal);
+                            getReq.onsuccess = function(){
+                                write("Key for the object with the price as ", DAO.priceIndexVal, " is " , getReq.result);
+                            };
+                            getReq.onerror = function(){
+                                writeError("Error getting count of objects");
+                                writeError(e);
+                            };
+                        </script>
+                        <link class = "example-docs" href = "div#reference>div#index_getkey"/></li>
+                    <li class = "example" depends = "index"  insertAt = "index.open">
+                        <a class = "example-name">Count objects in index</a>
+                        <script type = "text/javascript">
+                            // Get a count of objects
+                            var countReq = index.count();
+                            countReq.onsuccess = function(){
+                                write("Count of objects", countReq.result);
+                            };
+                            countReq.onerror = function(e){
+                                writeError("Error getting count of objects");
+                                writeError(e);
+                            };
+                        </script>
+                        <link class = "example-docs" href = "div#reference>div#index_count"/></li>
+                    <li class = "example-set">
+                        <a class = "example-set-name">Cursors on Indexes</a>
+                        <ul>
+                            <li class = "example" depends = "index" insertAt= "index.open">
+                                <a class = "example-name">Keys on Index</a>
+                                <script type = "text/javascript">
+                                    write("Starting to iterate on object cursor...");
+                                    var cursorRequest = index.openKeyCursor();
+                                    cursorRequest.onsuccess = function(event){
+                                        var objectCursor = cursorRequest.result;
+                                        if (!objectCursor) {
+                                            return;
+                                        }
+                                        write("Indexed on price:", objectCursor.key);
+                                        objectCursor["continue"]();
+                                    };
+                                    cursorRequest.onerror = function(event){
+                                        write("Could not open Object Store", event);
+                                    };
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#index_cursor"/></li>
+                            <li class = "example" depends = "index" insertAt = "index.open">
+                                <a class = "example-name">Objects on Index</a>
+                                <script type = "text/javascript">
+                                    write("Starting to iterate on object cursor...");
+                                    var cursorRequest = index.openCursor();
+                                    cursorRequest.onsuccess = function(event){
+                                        var objectCursor = cursorRequest.result;
+                                        if (!objectCursor) {
+                                            return;
+                                        }
+                                        write(objectCursor.key, objectCursor.value);
+                                        objectCursor["continue"]();
+                                    };
+                                    cursorRequest.onerror = function(event){
+                                        write("Could not open Object Store", event);
+                                    };
+                                </script>
+                                <link class = "example-docs" href = "div#reference>div#index_keycursor"/></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+</ul>
+<div id = "reference">
+    <div id = "prereq">
+        <h3>Pre Requisites</h3>
+        <p>
+            Though most browsers have unprefixed IndexedDB, it may still be a good idea to check for vendor prefixes.
+        </p>
+        <p>
+            You can find more details about IndexedDB
+            <a target = '_blank' href = 'http://hacks.mozilla.org/2010/06/comparing-indexeddb-and-webdatabase/'>here</a>
+            ,
+            <a target="_blank" href = 'http://hacks.mozilla.org/2010/06/comparing-indexeddb-and-webdatabase/'>here</a>
+            and
+            <a target = '_blank' href = "http://hacks.mozilla.org/2010/06/beyond-html5-database-apis-and-the-road-to-indexeddb/">here</a>
+            .
+        </p>
+        <h2>
+            If you get errors trying to run examples, make sure that you hit the "Load-Prerequisites" button at the top right.
+        </h2>
+    </div>
+    <div id = "openDatabase">
+        <h3>Open Database</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBFactory-open-IDBOpenDBRequest-DOMString-name-unsigned-long-long-version"></iframe>
+    </div>
+    <div id = "deleteDatabase">
+        <h3>Delete Database</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBFactorySync-deleteDatabase-void-DOMString-name"></iframe>
+    </div>
+    <div id = "closeDatabase">
+        <h3>Delete Database</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-close-void"></iframe>
+    </div>
+    <div id = "openObjectStore">
+        <h3>Open ObjectStore</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBTransactionSync-objectStore-IDBObjectStoreSync-DOMString-name"></iframe>
+    </div>
+    <div id = "createObjectStore">
+        <h3>Create Object Store</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-createObjectStore-IDBObjectStoreSync-DOMString-name-IDBObjectStoreParameters-optionalParameters"></iframe>
+    </div>
+    <div id = "deleteObjectStore">
+        <h3>Remove Object Store</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-deleteObjectStore-void-DOMString-name"></iframe>
+    </div>
+    <div id = "save">
+        <h3>Add Data</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-add-any-any-value-any-key"></iframe>
+    </div>
+    <div id = "delete">
+        <h3>Delete data</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-delete-boolean-any-key"></iframe>
+    </div>
+    <div id = "modify">
+        <h3>Update data</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-put-any-any-value-any-key"></iframe>
+    </div>
+    <div id = "get">
+        <h3>Get Data</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-get-any-any-key"></iframe>
+    </div>
+    <div id = "clearObjectStore">
+        <h3>Clear Object Store</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-clear-IDBRequest"></iframe>
+    </div>
+    <div id = "cursor">
+        <h3>Open Cursor</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-openCursor-IDBCursorWithValueSync-any-range-DOMString-direction"></iframe>
+    </div>
+    <div id = "cursor_advance">
+        <h3>Iterate over Cursor</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-advance-boolean-unsigned-long-count"></iframe>
+    </div>
+    <div id = "cursor_continue">
+        <h3>Iterate over Cursor</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-continue-boolean-any-key"></iframe>
+    </div>
+    <div id = "cursor_remove">
+        <h3>Remove Objects using Cursor</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-delete-boolean"></iframe>
+    </div>
+    <div id = "cursor_update">
+        <h3>Update Objects using Cursor</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-update-IDBRequest-any-value"></iframe>
+    </div>
+    <div id = "index_names">
+        <h3>Get Index Names</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-indexNames"></iframe>
+    </div>
+    <div id = "index_create">
+        <h3>Create Index</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-createIndex-IDBIndex-DOMString-name-any-keyPath-IDBIndexParameters-optionalParameters"></iframe>
+    </div>
+    <div id = "index_open">
+        <h3>Open Index</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-index-IDBIndex-DOMString-name"></iframe>
+    </div>
+    <div id = "index_cursor">
+        <h3>Cursor on Index</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-openCursor-IDBRequest-any-range-DOMString-direction"></iframe>
+    </div>
+    <div id = "index_keycursor">
+        <h3>Key Cursor on Index</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-openKeyCursor-IDBRequest-any-range-DOMString-direction"></iframe>
+    </div>
+    <div id = "index_remove">
+        <h3>Remove Index</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-deleteIndex-void-DOMString-indexName"></iframe>
+    </div>
+    <div id = "index_get">
+        <h3>Get an object by the Indexed key</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-get-IDBRequest-any-key"></iframe>
+    </div>
+    <div id = "index_getkey">
+        <h3>Get Indexed Key</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-getKey-IDBRequest-any-key"></iframe>
+    </div>
+    <div id = "index_count">
+        <h3>Count of all objects in Index</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-count-IDBRequest-any-key"></iframe>
+    </div>
+    <div id = "getAllStores">
+        <h3>List of all object stores</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-objectStoreNames"></iframe>
+    </div>
+    <div id = "getAllData">
+        <h3>Get All objects in data store</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-count-unsigned-long-any-key"></iframe>
+    </div>
+    <div id = "createTransaction">
+        <h3>Create a new transaction</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-transaction-void-any-storeNames-IDBTransactionCallback-callback-DOMString-mode-unsigned-long-timeout"></iframe>
+    </div>
+    <div id = "abortTransaction">
+        <h3>Create a new transaction</h3>
+        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBTransactionSync-abort-void"></iframe>
+    </div>
+</div>
+<div class = "splash">
+    <h1>IndexedDB API</h1>
+    <p style ="font-size : 1.2em">
+        The list of examples illustrate the IndexedDB API. IndexedDB API is a specification dealing with storing large amounts of data on the client. More information about IndexedDB can be found at
+        <a href="http://nparashuram.com/IndexedDB" target="_blank">this project home page</a>
+        .
+    </p>
+    <h2>
+        Browser support (
+        <a href = "http://caniuse.com/indexeddb/embed/" target="_blank">link</a>
+        )
+    </h2>
+    <iframe src = "http://caniuse.com/indexeddb/embed/" style = "border:none; width: 100%; height: 200px"></iframe>
+</div>
+</body>
 </html>
