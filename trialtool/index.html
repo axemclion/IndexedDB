@@ -13,6 +13,8 @@
                             // Initialising the window.IndexedDB Object
                             window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
+                            // Note that the IndexedDB polyfill at http://nparashuram.com/IndexedDBShim/ is already added to make this work on unsupported browsers
+
                             // this is just a global variable
                             var DAO = DAO || {}; 
                         </script>
@@ -485,6 +487,7 @@
                                 writeError("Error getting count of objects");
                                 writeError(e);
                             };
+                            consol
                         </script>
                         <link class = "example-docs" href = "div#reference>div#index_count"/></li>
                     <li class = "example-set">
@@ -554,119 +557,119 @@
     </div>
     <div id = "openDatabase">
         <h3>Open Database</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBFactory-open-IDBOpenDBRequest-DOMString-name-unsigned-long-long-version"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBFactory-open-IDBOpenDBRequest-DOMString-name-unsigned-long-long-version"></iframe>
     </div>
     <div id = "deleteDatabase">
         <h3>Delete Database</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBFactorySync-deleteDatabase-void-DOMString-name"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBFactorySync-deleteDatabase-void-DOMString-name"></iframe>
     </div>
     <div id = "closeDatabase">
         <h3>Delete Database</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-close-void"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-close-void"></iframe>
     </div>
     <div id = "openObjectStore">
         <h3>Open ObjectStore</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBTransactionSync-objectStore-IDBObjectStoreSync-DOMString-name"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBTransactionSync-objectStore-IDBObjectStoreSync-DOMString-name"></iframe>
     </div>
     <div id = "createObjectStore">
         <h3>Create Object Store</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-createObjectStore-IDBObjectStoreSync-DOMString-name-IDBObjectStoreParameters-optionalParameters"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-createObjectStore-IDBObjectStoreSync-DOMString-name-IDBObjectStoreParameters-optionalParameters"></iframe>
     </div>
     <div id = "deleteObjectStore">
         <h3>Remove Object Store</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-deleteObjectStore-void-DOMString-name"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-deleteObjectStore-void-DOMString-name"></iframe>
     </div>
     <div id = "save">
         <h3>Add Data</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-add-any-any-value-any-key"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-add-any-any-value-any-key"></iframe>
     </div>
     <div id = "delete">
         <h3>Delete data</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-delete-boolean-any-key"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-delete-boolean-any-key"></iframe>
     </div>
     <div id = "modify">
         <h3>Update data</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-put-any-any-value-any-key"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-put-any-any-value-any-key"></iframe>
     </div>
     <div id = "get">
         <h3>Get Data</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-get-any-any-key"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-get-any-any-key"></iframe>
     </div>
     <div id = "clearObjectStore">
         <h3>Clear Object Store</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-clear-IDBRequest"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-clear-IDBRequest"></iframe>
     </div>
     <div id = "cursor">
         <h3>Open Cursor</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-openCursor-IDBCursorWithValueSync-any-range-DOMString-direction"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-openCursor-IDBCursorWithValueSync-any-range-DOMString-direction"></iframe>
     </div>
     <div id = "cursor_advance">
         <h3>Iterate over Cursor</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-advance-boolean-unsigned-long-count"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-advance-boolean-unsigned-long-count"></iframe>
     </div>
     <div id = "cursor_continue">
         <h3>Iterate over Cursor</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-continue-boolean-any-key"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-continue-boolean-any-key"></iframe>
     </div>
     <div id = "cursor_remove">
         <h3>Remove Objects using Cursor</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-delete-boolean"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-delete-boolean"></iframe>
     </div>
     <div id = "cursor_update">
         <h3>Update Objects using Cursor</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-update-IDBRequest-any-value"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBCursorSync-update-IDBRequest-any-value"></iframe>
     </div>
     <div id = "index_names">
         <h3>Get Index Names</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-indexNames"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-indexNames"></iframe>
     </div>
     <div id = "index_create">
         <h3>Create Index</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-createIndex-IDBIndex-DOMString-name-any-keyPath-IDBIndexParameters-optionalParameters"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-createIndex-IDBIndex-DOMString-name-any-keyPath-IDBIndexParameters-optionalParameters"></iframe>
     </div>
     <div id = "index_open">
         <h3>Open Index</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-index-IDBIndex-DOMString-name"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-index-IDBIndex-DOMString-name"></iframe>
     </div>
     <div id = "index_cursor">
         <h3>Cursor on Index</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-openCursor-IDBRequest-any-range-DOMString-direction"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-openCursor-IDBRequest-any-range-DOMString-direction"></iframe>
     </div>
     <div id = "index_keycursor">
         <h3>Key Cursor on Index</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-openKeyCursor-IDBRequest-any-range-DOMString-direction"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-openKeyCursor-IDBRequest-any-range-DOMString-direction"></iframe>
     </div>
     <div id = "index_remove">
         <h3>Remove Index</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-deleteIndex-void-DOMString-indexName"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStore-deleteIndex-void-DOMString-indexName"></iframe>
     </div>
     <div id = "index_get">
         <h3>Get an object by the Indexed key</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-get-IDBRequest-any-key"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-get-IDBRequest-any-key"></iframe>
     </div>
     <div id = "index_getkey">
         <h3>Get Indexed Key</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-getKey-IDBRequest-any-key"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-getKey-IDBRequest-any-key"></iframe>
     </div>
     <div id = "index_count">
         <h3>Count of all objects in Index</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-count-IDBRequest-any-key"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBIndex-count-IDBRequest-any-key"></iframe>
     </div>
     <div id = "getAllStores">
         <h3>List of all object stores</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-objectStoreNames"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-objectStoreNames"></iframe>
     </div>
     <div id = "getAllData">
         <h3>Get All objects in data store</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-count-unsigned-long-any-key"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBObjectStoreSync-count-unsigned-long-any-key"></iframe>
     </div>
     <div id = "createTransaction">
         <h3>Create a new transaction</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-transaction-void-any-storeNames-IDBTransactionCallback-callback-DOMString-mode-unsigned-long-timeout"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBDatabaseSync-transaction-void-any-storeNames-IDBTransactionCallback-callback-DOMString-mode-unsigned-long-timeout"></iframe>
     </div>
     <div id = "abortTransaction">
         <h3>Create a new transaction</h3>
-        <iframe style ="width : 100%; height : 300px; border:none" src = "http://www.w3.org/TR/IndexedDB/#widl-IDBTransactionSync-abort-void"></iframe>
+        <iframe style ="width : 100%; height : 300px; border:none" data-src = "http://www.w3.org/TR/IndexedDB/#widl-IDBTransactionSync-abort-void"></iframe>
     </div>
 </div>
 <div class = "splash">
@@ -681,7 +684,7 @@
         <a href = "http://caniuse.com/indexeddb/embed/" target="_blank">link</a>
         )
     </h2>
-    <iframe src = "http://caniuse.com/indexeddb/embed/" style = "border:none; width: 100%; height: 200px"></iframe>
+    <iframe data-src = "http://caniuse.com/indexeddb/embed/" style = "border:none; width: 100%; height: 200px"></iframe>
 </div>
 </body>
 </html>
