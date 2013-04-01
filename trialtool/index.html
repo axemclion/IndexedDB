@@ -375,6 +375,7 @@
                                                 "id": cursor.value.id,
                                                 "newData": new Date().getTime()
                                             });
+                                            cursor["continue"]();
                                         }
                                     } catch (e) {
                                         writeError(e);
@@ -387,7 +388,8 @@
                                     try {
                                         if (cursor) {
                                             write("Deleting cursor", cursor.key);
-                                            cursor["delete"]();
+                                            cursor.delete();
+                                            cursor.continue();
                                         }
                                     } catch (e) {
                                         writeError(e);
