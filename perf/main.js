@@ -26,7 +26,7 @@ var browserScope = (function() {
 			window._bTestResults = {};
 			_.each(window.IndexedDBPerf.results, function(o) {
 				// Hate losing the prescision here
-				window._bTestResults[o.name] = o.hz.toFixed(0);
+				window._bTestResults[o.name] = (o.hz * 1000).toFixed(0);
 			});
 			var url = ['http://www.browserscope.org/user/beacon/', window.IndexedDBPerf.suites[currentTest]._bTestKey, '?sandboxid=a778403c5ccc49c']
 			$.getScript(url.join(''), function() {
