@@ -1,6 +1,8 @@
 (function(s) {
 	s['Cursors - Parallel Read'] = {
-
+		category : 'Cursors',
+		desc :'Is it faster to read all data in one cursor, or segment the data and open multiple cursors in parallel to read them',
+		_bTestKey : 'agt1YS1wcm9maWxlcnINCxIEVGVzdBjXtKgUDA',
 		onStart: function(cb, status) {
 			$.indexedDB('IndexedDBPerf').deleteDatabase().done(function() {
 				$.indexedDB('IndexedDBPerf', {

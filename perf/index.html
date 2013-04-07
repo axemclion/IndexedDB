@@ -59,15 +59,24 @@
 	<div class="container-fluid">
 		<div class="row-fluid">
 			<div class="span3">
-				<ul class="nav nav-tabs nav-list nav-stacked" id = "perfTestLinks">
-					<script type = "text/html">
-							<% _.each(perf, function(name, key) { %> 
-								<li data-name = "<%= key %>">
-									<a href="#<%=key%>" data-name = "<%=key%>"> <i class="icon-chevron-right pull-right"></i>
-										<%= key %></a>
+				<div class = "well sidebar-nav">
+					<ul class="nav nav-list" id = "perfTestLinks">
+						<script type = "text/html">
+							<% _.each(_.groupBy(perf, 'category'), function(i, name) { %>
+								<li class = 'nav-header'>
+									<%= name %>
 								</li>
-							<% }); %></script>
-				</ul>
+								<% _.each(perf, function(val, key){ if (val.category === name){%>
+									<li data-name = "<%= key %>">
+										<a href="#<%=key%>" data-name = "<%=key%>"> <i class="icon-chevron-right pull-right"></i>
+											<%= key %>
+										</a>
+									</li>
+								<%}}) %>
+							<% }); %>
+						</script>
+					</ul>
+				</div>
 			</div>
 			<div class="span9">
 				<div id = "testContent">
@@ -238,7 +247,6 @@
 
 	<script type="text/javascript" src = "main.js"></script>
 
-	<script type="text/javascript" src = "tests/Template.js"></script>
 	<script type="text/javascript" src = "tests/1_KeyCompare.js"></script>
 	<script type="text/javascript" src = "tests/2_TableSchema_Write.js"></script>
 	<script type="text/javascript" src = "tests/3_TransactionRead.js"></script>

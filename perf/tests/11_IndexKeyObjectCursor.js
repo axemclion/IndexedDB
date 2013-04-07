@@ -1,6 +1,8 @@
 (function(s) {
 	s['Key and Object Cursor on Index'] = {
+		category: 'Indexes',
 		desc: "What is faster - A key cursor on an Index, or an object cursor on an index",
+		_bTestKey: 'agt1YS1wcm9maWxlcnINCxIEVGVzdBj26aEUDA',
 		onStart: function(cb, status) {
 			$.indexedDB('IndexedDBPerf').deleteDatabase().done(function() {
 				$.indexedDB('IndexedDBPerf', {

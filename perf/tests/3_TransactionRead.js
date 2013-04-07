@@ -1,5 +1,6 @@
 (function(s) {
 	s['Transaction based on Read'] = {
+		category: 'ObjectStore',
 		desc: 'Should read requests be queued in a single transaction, or will it be faster to open multiple transactions and read in batches',
 		_bTestKey: 'agt1YS1wcm9maWxlcnINCxIEVGVzdBjIjagUDA',
 		onStart: function(cb, status) {

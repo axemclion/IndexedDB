@@ -1,6 +1,8 @@
 (function(s) {
 	s['Cursor Advance/Continue'] = {
+		category: 'Cursors',
 		desc: "What is faster - advancing in a cursor, or just calling continue",
+		_bTestKey: 'agt1YS1wcm9maWxlcnINCxIEVGVzdBjSvaMUDA',
 		onStart: function(cb, status) {
 			$.indexedDB('IndexedDBPerf').deleteDatabase().done(function() {
 				$.indexedDB('IndexedDBPerf', {

@@ -58,3 +58,7 @@
 .center-align{
 	text-align: center !important;
 }
+
+.sidebar-nav{
+	padding: 9px 0;
+}

@@ -1,5 +1,6 @@
 (function(s) {
 	s['Comparing Keys'] = {
+		category: 'General',
 		desc: 'Performance for comparing different key types',
 		_bTestKey: 'agt1YS1wcm9maWxlcnINCxIEVGVzdBir36IUDA',
 		onStart: function(cb) {

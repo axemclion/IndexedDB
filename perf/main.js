@@ -95,7 +95,7 @@ $(document).ready(function() {
 	el.on("click", "li>a", function() {
 		el.children("li").removeClass("active");
 		var $this = $(this);
-		$this.addClass("active");
+		$this.parent().addClass("active");
 		content.html(contentTemplate($.extend({
 			"name": $this.data("name"),
 			"desc": "",

@@ -1,6 +1,8 @@
 (function(s) {
 	s['Iterations using Cursors/Index Cursors'] = {
+		category : 'Indexes',
 		desc: 'Is iterating using Indexes as fast as Iterating using normal cursors',
+		_bTestKey:'agt1YS1wcm9maWxlcnINCxIEVGVzdBj35qcUDA',
 		onStart: function(cb, status) {
 			$.indexedDB('IndexedDBPerf').deleteDatabase().done(function() {
 				$.indexedDB('IndexedDBPerf', {

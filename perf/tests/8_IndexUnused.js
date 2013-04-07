@@ -1,5 +1,8 @@
 (function(s) {
 	s['Indexes - Used vs Unused Indexes'] = {
+		category : 'Indexes',
+		desc : 'Does adding unused Indexes slow down the speed at which data is written to an object store',
+		_bTestKey: 'agt1YS1wcm9maWxlcnINCxIEVGVzdBj14KkUDA',
 		onStart: function(cb) {
 			$.indexedDB('IndexedDBPerf').deleteDatabase().done(function() {
 				$.indexedDB('IndexedDBPerf', {

@@ -1,6 +1,8 @@
 (function(s) {
 	s['Cursors - Parallel Write'] = {
-
+		category: 'Cursors',
+		_bTestKey: 'agt1YS1wcm9maWxlcnINCxIEVGVzdBi9uqkUDA',
+		desc: 'Is it faster to write all data in one cursor, or segment the data and open multiple cursors in parallel to write them',
 		onStart: function(cb, status) {
 			$.indexedDB('IndexedDBPerf').deleteDatabase().done(function() {
 				status();
