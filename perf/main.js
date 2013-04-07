@@ -26,9 +26,9 @@ var browserScope = (function() {
 			window._bTestResults = {};
 			_.each(window.IndexedDBPerf.results, function(o) {
 				// Hate losing the prescision here
-				window._bTestResults[o.name] = (o.hz * 1000).toFixed(0);
+				window._bTestResults[o.name.replace(/[,]/g, " ")] = (o.hz * 1000).toFixed(0);
 			});
-			var url = ['http://www.browserscope.org/user/beacon/', window.IndexedDBPerf.suites[currentTest]._bTestKey, '?sandboxid=a778403c5ccc49c']
+			var url = ['http://www.browserscope.org/user/beacon/', window.IndexedDBPerf.suites[currentTest]._bTestKey];
 			$.getScript(url.join(''), function() {
 				$('.browserScope .saveDone').fadeIn();
 			});
@@ -215,6 +215,6 @@ $(document).ready(function() {
 		});
 	});
 
-	var hash = document.location.hash.substring(1);
-	el.children(hash ? "li[data-name='" + hash + "']" : "li:first").children("a").click();
+	var hash = unescape(document.location.hash.substring(1));
+	el.children(hash ? "li[data-name='" + hash + "']" : "li:not('.nav-header'):first").children("a").click();
 });

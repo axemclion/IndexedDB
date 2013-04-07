@@ -98,7 +98,7 @@
 					throw "Could not open database";
 				};
 			},
-			'100 cursors, 10 reads per cursor': function() {
+			'100 cursors, 10 writes per cursor': function() {
 				var req = window.indexedDB.open('IndexedDBPerf');
 				var readCount = 0;
 				req.onsuccess = function() {
@@ -133,7 +133,7 @@
 					throw "Could not open database";
 				};
 			},
-			'500 cursors, 2 reads per cursor': function() {
+			'500 cursors, 2 writes per cursor': function() {
 				var req = window.indexedDB.open('IndexedDBPerf');
 				var readCount = 0;
 				req.onsuccess = function() {
@@ -168,7 +168,7 @@
 					throw "Could not open database";
 				};
 			},
-			'1000 cursors, 1 read per cursor': function() {
+			'1000 cursors, 1 writes per cursor': function() {
 				var req = window.indexedDB.open('IndexedDBPerf');
 				var readCount = 0;
 				req.onsuccess = function() {
