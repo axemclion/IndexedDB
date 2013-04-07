@@ -3,8 +3,7 @@
 <head>
 	<title>IndexedDB Performance Test cases</title>
 	<link href="../demoer/bootstrap-combined.min.css" rel="stylesheet"/>
-	<link rel="stylesheet" type="text/css" href="main.css">
-</head>
+	<link rel="stylesheet" type="text/css" href="main.css"></head>
 <body data-feedly-processed="yes">
 	<div class="navbar navbar-inverse navbar-fixed-top">
 		<div class="navbar-inner">
@@ -79,6 +78,10 @@
 				</div>
 				<script type = "text/html">
 					<h3>
+					<div class = "controls pull-right">
+						<a class = "abortTests btn btn-large btn-danger  pull-right hide" data-name ="<%=name%>">Abort Tests</a>
+						<a class = "runTests   btn btn-large btn-primary pull-right" data-name ="<%=name%>">Run Tests</a>
+					</div>
 						<%= name %></h3>
 					<p>
 						<%= desc %></p>
@@ -92,26 +95,22 @@
 							</div>
 							<div id="preTest" class="accordion-body collapse">
 								<div class="accordion-inner">
-									<h5>
-										onStart - run once for the entire page
-										<a class = "runPreTest btn btn-mini" data-name= "onStart" data-suite = "<%= name%>" >Run</a>
-									</h5>
-									<pre>
-										<%= onStart %></pre>
-								</div>
-								<div class="accordion-inner">
-									<h5>setup - run once before every test. 
-										<a class = "runPreTest btn btn-mini" data-name= "setup" data-suite = "<%= name%>" >Run</a>
-									</h5>
-									<pre>
-										<%= setup %></pre>
-								</div>
-								<div class="accordion-inner">
-									<h5>teardown - run once after every test. 
-										<a class = "runPreTest btn btn-mini" data-name= "teardown" data-suite = "<%= name%>" >Run</a>
-									</h5>
-									<pre>
-										<%= teardown %></pre>
+									<ul class="nav nav-tabs" id="preTestTabs">
+									  <li class="active"><a href = "#onStartCode" data-toggle="tab">onStart</a></li>
+									  <li><a href = "#onSetupCode" data-toggle="tab" >Setup</a></li>
+									  <li><a href = "#onTeardownCode" data-toggle="tab">Teardown</a></li>
+									</ul>
+									<div class="tab-content">
+										<div class="tab-pane active" id="onStartCode">
+											<pre><%= onStart %></pre>
+										</div>
+										<div class="tab-pane" id="onSetupCode">
+											<pre><%= setup %></pre>
+										</div>
+										<div class="tab-pane" id="onTeardownCode">
+											<pre><%= teardown %></pre>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -124,19 +123,27 @@
 							</h4>
 						</div>
 						<div id="testCases" class="accordion-body collapse in">
-							<% _.each(tests, function(obj, key){ %>
-								<div class="accordion-inner" data-name="<%=key%>">
-									<div>
-										<h5>
-											<%= key %>
-											<a class = "runTestCase btn btn-mini" data-name = "<%= key %>" data-suite = "<%= name%>" >Run</a>
-											<a class = "rank badge hide" data-name = "<%= key %>">
-											</a>
-										</h5>
-									</div>
-									<pre><%= obj%></pre>
-								</div>
-							<%})%></div>
+							<div class="accordion-inner">
+								<ul class="nav nav-tabs" id="preTestTabs">
+									<% var count = 0%>
+									<% _.each(tests, function(obj, key){ %>
+										<li class = "<%= count === 0? 'active' : 'no'%>">
+											<a data-toggle="tab" href = "#testcase<%= count%>">
+												<span class = "badge rank hide" data-name="<%= key%>"></span>
+												<%= key %></a>
+										</li>
+										<% count++ %>
+
+									<%})%></ul>
+								<div class="tab-content">
+									<% var count = 0 %>
+									<% _.each(tests, function(obj, key, i){ %>
+										<div class="tab-pane <%= count === 0? 'active' : 'no'%>" id="testcase<%= count %>">
+											<pre><%= obj %></pre>
+											<% count++ %></div>
+									<%})%></div>
+							</div>
+						</div>
 					</div>
 					<div class="progress hide">
 					  <div class=" bar bar-info start" style="width: 0%;"></div>
@@ -151,41 +158,61 @@
 						<a class = "runTests   btn btn-primary pull-right" data-name ="<%=name%>">Run Tests</a>
 					</div>
 				</script>
-				<div class = "resultsContent hide clearfix">
-					<script type = "text/html">
-						<div class = "accordion">
-							<div class = "accordion-group">
-								<div class = "accordion-heading">
-									<h4>
-										<a class="accordion-toggle " data-toggle="collapse" href="#results">
-											<i class = "icon-cog"></i>   
-											Results
-										</a>
-									</h4>
+				<div class = "accordion clearfix">
+					<div class = "accordion-group">
+						<div class = "accordion-heading">
+							<h4>
+								<a class="accordion-toggle " data-toggle="collapse" href="#results">
+									<i class = "icon-cog"></i>
+									Results
+								</a>
+							</h4>
+						</div>
+						<div class = "accordion-body" id = "results">
+							<div class = "accordion-inner">
+								<div class = "browserScope clearfix">
+									<div class="alert alert-error saveError hide">
+										<button type="button" class="close" data-dismiss="alert">&times;</button> <strong>Error!</strong>
+										Could not save results to Browserscope. This could be due to a missing _bTestKey in the test.
+									</div>
+									<div class="alert alert-success saveDone hide">
+										<button type="button" class="close" data-dismiss="alert">&times;</button> <strong>Success !</strong>
+										Results saved to Browserscope
+									</div>
+									<div class="alert alert-error loadError hide">
+										<button type="button" class="close" data-dismiss="alert">&times;</button>
+										<strong>Error!</strong>
+										Could not load results from Browserscope. This could be due to a missing _bTestKey in the test.
+									</div>
+									<div id = "viz">
+									</div>
 								</div>
-								<div class = "accordion-body collapse" id = "results">
-									<div class = "accordion-inner">
-										<table class = "table table-hover">
-											<tr>
-												<th>&nbsp;</th>
+								<div class = "resultsContent clearfix">
+									<script type = "text/html">
+										<table class = "table table-hover table-bordered">
+											<tr class = "info">
+												<th>#</th>
 												<th>Name</th>
+												<th>Rank</th>
 												<th>Score</th>
+												<th>Slow by</th>
 												<th>Relative Margin of Error</th>
 											</tr>
 											<% _.each(bm, function(t, i){ %>
 												<tr>
 													<td><%= i + 1 %></td>
 													<td><%= t.name %></td>
-													<td><%= t.hz%></td>
-													<td><%= t.stats.rme %></td>
+													<td class = "center-align"><span class = "rank badge" data-name = "<%=t.name %>"></span></td>
+													<td class = "right-align"><%= t.hz.toFixed(2)%></td>
+													<td class = "right-align"><span class = "percentSlow" data-name = "<%=t.name %>"></span> %</td>
+													<td class = "right-align"><%= t.stats.rme.toFixed(2) %>%</td>
 												</tr>
-											<%}); %>
-										</table>
-									</div>
+											<%}); %></table>
+									</script>
 								</div>
 							</div>
 						</div>
-					</script>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -202,7 +229,8 @@
 	<script src="../demoer/jquery.min.js"></script>
 	<script src="../demoer/bootstrap.min.js"></script>
 	<script src="../demoer/beautify.js"></script>
-	<script src="lib/jquery.indexeddb.js" ></script>
+	<script src="//www.google.com/jsapi"></script>
+	<script src="//nparashuram.com/jquery-indexeddb/dist/jquery.indexeddb.js" ></script>
 
 	<script type="text/javascript" src = "lib/underscore.min.js"></script>
 	<script type="text/javascript" src = "lib/Faker.js"></script>
@@ -210,6 +238,7 @@
 
 	<script type="text/javascript" src = "main.js"></script>
 
+	<script type="text/javascript" src = "tests/Template.js"></script>
 	<script type="text/javascript" src = "tests/1_KeyCompare.js"></script>
 	<script type="text/javascript" src = "tests/2_TableSchema_Write.js"></script>
 	<script type="text/javascript" src = "tests/3_TransactionRead.js"></script>

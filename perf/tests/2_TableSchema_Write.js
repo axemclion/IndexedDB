@@ -1,5 +1,8 @@
 (function(s) {
   s['Table Schema Write'] = {
+    desc : 'Is it faster to queue up write requests in a single transaction, or start multiple transactions with with writes requests batched in them',
+    _bTestKey: 'agt1YS1wcm9maWxlcnINCxIEVGVzdBjt9acUDA',
+
     onStart: function(cb) {
       $.indexedDB('IndexedDBPerf').deleteDatabase().done(function() {
         $.indexedDB('IndexedDBPerf', {

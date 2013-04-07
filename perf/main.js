@@ -2,8 +2,86 @@ window.IndexedDBPerf = {
 	suites: {},
 	results: {
 		running: false
-	}
+	},
+	googleLoaded: false
 };
+
+google.load('visualization', '1.0', {
+	'packages': ['corechart']
+});
+google.setOnLoadCallback(function() {
+	window.IndexedDBPerf.googleLoaded = true;
+	browserScope.loadResults();
+});
+
+
+var browserScope = (function() {
+	var currentTest = null;
+	return {
+		saveResults: function() {
+			$('.browserScope .alert').hide();
+			if (typeof currentTest === 'undefined' || typeof window.IndexedDBPerf.suites[currentTest] === 'undefined' || window.IndexedDBPerf.suites[currentTest]._bTestKey === 'undefined') {
+				$('.browserScope .saveError').fadeIn();
+			}
+			window._bTestResults = {};
+			_.each(window.IndexedDBPerf.results, function(o) {
+				// Hate losing the prescision here
+				window._bTestResults[o.name] = o.hz.toFixed(0);
+			});
+			var url = ['http://www.browserscope.org/user/beacon/', window.IndexedDBPerf.suites[currentTest]._bTestKey, '?sandboxid=a778403c5ccc49c']
+			$.getScript(url.join(''), function() {
+				$('.browserScope .saveDone').fadeIn();
+			});
+		},
+		loadResults: function(testName) {
+			$('.browserScope .alert').hide();
+			testName && (currentTest = testName);
+			if (window.IndexedDBPerf.googleLoaded === false) return;
+
+			if (typeof window.IndexedDBPerf.suites[currentTest] === 'undefined' || typeof window.IndexedDBPerf.suites[currentTest]._bTestKey === 'undefined') {
+				$('#viz').empty();
+				$('.browserScope .loadError').fadeIn();
+				return;
+			}
+
+			$.getJSON('http://www.browserscope.org/user/tests/table/' + window.IndexedDBPerf.suites[currentTest]._bTestKey + '?o=json&callback=?', function(res, status) {
+				if (status !== 'success') {
+					$('.browserScope .loadError').fadeIn();
+					return;
+				}
+				var data = new google.visualization.DataTable();
+				data.addColumn('string', 'Browser');
+				var headerAdded = false;
+				_.each(res.results, function(o, key) {
+					if (!headerAdded) {
+						_.each(o.results, function(v, k) {
+							data.addColumn('number', k);
+						});
+						headerAdded = true;
+					}
+					if (o.count > 0) {
+						data.addRow([key].concat(_.map(o.results, function(x) {
+							return parseInt(x.result);
+						})));
+					}
+				});
+
+				var chart = new google.visualization.BarChart(document.getElementById('viz'));
+				chart.draw(data, {
+					height: 500,
+					animation: {
+						duration: 500,
+						easing: 'inAndOut'
+					},
+					legend: {
+						position: 'top'
+					}
+				});
+			});
+		}
+	}
+}());
+
 $(document).ready(function() {
 	var el = $("#perfTestLinks");
 	var content = $("#testContent");
@@ -26,11 +104,13 @@ $(document).ready(function() {
 			"tearDown": "",
 			tests: []
 		}, window.IndexedDBPerf.suites[$this.data("name")])));
-		content.find('pre').each(function(){
+		content.find('pre').each(function() {
 			var $this = $(this);
 			$this.html(js_beautify($this.html()));
 		});
+
 		$('.resultsContent').hide();
+		browserScope.loadResults($this.data("name"));
 	});
 
 	$(document).on('click', '.runTestCase', function() {
@@ -63,15 +143,14 @@ $(document).ready(function() {
 			return;
 		}
 
-		$(this).hide();
-		$(".abortTests").show();
+		$('.runTests').hide();
+		$('.abortTests').show();
 
 		var progress = $(".progress").show();
 		progress.children().width(0).empty();
 		progress.children('.start').width('3%');
 		progress.children('.tests');
 		bar = progress.children('.pretest').width('7%').addClass('progress-active');
-
 		var cycle = 0,
 			suite = window.IndexedDBPerf.suites[$(this).data("name")],
 			testWidth = (80 / _.size(suite.tests)) + "%";
@@ -102,17 +181,25 @@ $(document).ready(function() {
 				$('.runTests').show();
 				$('.abortTests').hide();
 				$('.resultsContent').hide();
-				$('.rank').removeClass('badge-important badge-warning badge-success');
-				_.each(_.sortBy(this, 'hz'), function(c, i, array) {
-					$(".rank[data-name='" + c.name + "']").html(array.length - i).show().addClass(function() {
-						if (i === 0) return 'badge-important';
-						if (i === array.length - 1) return 'badge-success';
-						return 'badge-warning';
-					}).attr("title", c.hz);
-				});
 				$(".resultsContent").html(resultsTemplate({
 					bm: this
 				})).show();
+				$('.rank').removeClass('badge-important badge-warning badge-success');
+				_.each(_.sortBy(this, 'hz'), function(c, i, array) {
+					var best = array[array.length - 1].hz;
+					$(".percentSlow[data-name='" + c.name + "']").html(((best - c.hz) / best * 100).toFixed(2));
+					$(".rank[data-name='" + c.name + "']").html(array.length - i).show().addClass(function() {
+						switch (i) {
+							case 0:
+								return 'badge-important';
+							case array.length - 1:
+								return 'badge-success';
+							default:
+								return 'badge-warning';
+						}
+					}).attr("title", c.hz);
+				});
+				browserScope.saveResults();
 			});
 
 			bm.on('abort', function() {
@@ -130,6 +217,4 @@ $(document).ready(function() {
 
 	var hash = document.location.hash.substring(1);
 	el.children(hash ? "li[data-name='" + hash + "']" : "li:first").children("a").click();
-
 });
-

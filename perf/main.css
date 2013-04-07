@@ -48,12 +48,13 @@
 }
 
 .rank{
-	position: relative;
-	float: right;
-	padding: 1.2em;
-	border-radius: 0px;
-	border-bottom-left-radius: 20px;
-	top: -20px;
-	right: -15px;
-	text-align: center;
+	margin-right: 10px;
+}
+
+.right-align {
+	text-align: right !important;
+}
+
+.center-align{
+	text-align: center !important;
 }
