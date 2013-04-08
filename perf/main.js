@@ -173,7 +173,7 @@ $(document).ready(function() {
 					onCycle: function() {
 						bar.html('<small>' + cycle+++'</small>');
 					},
-					defer: true
+					defer: typeof suite.defer === 'undefined'  ? true : suite.defer
 				});
 			}
 			bm.on('complete', function() {

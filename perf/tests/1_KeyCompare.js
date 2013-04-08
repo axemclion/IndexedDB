@@ -27,26 +27,22 @@
 		teardown: function() {
 
 		},
+		defer : false,
 		tests: {
 			'Integers': function(deferred) {
 				window.indexedDB.cmp(num1, num2);
-				deferred.resolve();
 			},
 			'Longs': function() {
 				window.indexedDB.cmp(long1, long2);
-				deferred.resolve();
 			},
 			'String': function() {
 				window.indexedDB.cmp(str1, str2);
-				deferred.resolve();
 			},
 			'Arrays': function() {
 				window.indexedDB.cmp(ar1, ar2);
-				deferred.resolve();
 			},
 			'Nested Arrays': function() {
 				window.indexedDB.cmp(nar1, nar2);
-				deferred.resolve();
 			}
 		}
 	};
