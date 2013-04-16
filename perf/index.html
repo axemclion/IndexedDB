@@ -187,23 +187,6 @@
 						</div>
 						<div class = "accordion-body" id = "results">
 							<div class = "accordion-inner">
-								<div class = "browserScope clearfix">
-									<div class="alert alert-error saveError hide">
-										<button type="button" class="close" data-dismiss="alert">&times;</button> <strong>Error!</strong>
-										Could not save results to Browserscope. This could be due to a missing _bTestKey in the test.
-									</div>
-									<div class="alert alert-success saveDone hide">
-										<button type="button" class="close" data-dismiss="alert">&times;</button> <strong>Success !</strong>
-										Results saved to Browserscope
-									</div>
-									<div class="alert alert-error loadError hide">
-										<button type="button" class="close" data-dismiss="alert">&times;</button>
-										<strong>Error!</strong>
-										Could not load results from Browserscope. This could be due to a missing _bTestKey in the test.
-									</div>
-									<div id = "viz">
-									</div>
-								</div>
 								<div class = "resultsContent clearfix">
 									<script type = "text/html">
 										<table class = "table table-hover table-bordered">
@@ -226,6 +209,23 @@
 												</tr>
 											<%}); %></table>
 									</script>
+								</div>
+								<div class = "browserScope clearfix">
+									<div class="alert alert-error saveError hide">
+										<button type="button" class="close" data-dismiss="alert">&times;</button> <strong>Error!</strong>
+										Could not save results to Browserscope. This could be due to a missing _bTestKey in the test.
+									</div>
+									<div class="alert alert-success saveDone hide">
+										<button type="button" class="close" data-dismiss="alert">&times;</button> <strong>Success !</strong>
+										Results saved to Browserscope
+									</div>
+									<div class="alert alert-error loadError hide">
+										<button type="button" class="close" data-dismiss="alert">&times;</button>
+										<strong>Error!</strong>
+										Could not load results from Browserscope. This could be due to a missing _bTestKey in the test.
+									</div>
+									<div id = "viz">
+									</div>
 								</div>
 							</div>
 						</div>
@@ -268,5 +268,8 @@
 	<script type="text/javascript" src = "tests/12_CursorContinueAdvance.js"></script>
 	<script type="text/javascript" src = "tests/13_OpenDBVersions.js"></script>
 	<script type="text/javascript" src = "tests/14_TransactionObjectStore.js"></script>
+	<script type="text/javascript" src = "tests/15_TransactionRead.js"></script>
+	<script type="text/javascript" src = "tests/16_TransactionWrite.js"></script>
+	<script type="text/javascript" src = "tests/17_AddUpdate.js"></script>
 </body>
 </html>
