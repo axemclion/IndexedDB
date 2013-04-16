@@ -6,13 +6,17 @@ window.IndexedDBPerf = {
 	googleLoaded: false
 };
 
-google.load('visualization', '1.0', {
-	'packages': ['corechart']
-});
-google.setOnLoadCallback(function() {
-	window.IndexedDBPerf.googleLoaded = true;
-	browserScope.loadResults();
-});
+try {
+	google.load('visualization', '1.0', {
+		'packages': ['corechart']
+	});
+	google.setOnLoadCallback(function() {
+		window.IndexedDBPerf.googleLoaded = true;
+		browserScope.loadResults();
+	});
+} catch (e) {
+
+}
 
 
 var browserScope = (function() {
@@ -83,6 +87,10 @@ var browserScope = (function() {
 }());
 
 $(document).ready(function() {
+	if (typeof window.indexedDB === 'undefined'){
+		$('#idbUnsupported').show();
+	}
+
 	var el = $("#perfTestLinks");
 	var content = $("#testContent");
 	var contentTemplate = _.template(content.next("script[type='text/html']").text());
@@ -173,7 +181,7 @@ $(document).ready(function() {
 					onCycle: function() {
 						bar.html('<small>' + cycle+++'</small>');
 					},
-					defer: typeof suite.defer === 'undefined'  ? true : suite.defer
+					defer: typeof suite.defer === 'undefined' ? true : suite.defer
 				});
 			}
 			bm.on('complete', function() {

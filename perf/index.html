@@ -79,6 +79,14 @@
 				</div>
 			</div>
 			<div class="span9">
+				<div id = "idbUnsupported" class = "hero alert alert-danger hide">
+					<h2>
+						IndexedDB is not supported in your browser.
+					</h2>
+					<p>
+						You could try using the <a href = '//nparashuram.com/IndexedDBShim'>polyfill</a> for IndexedDB API. I have not yet added the polyfill to this performance analysis. 
+					</p>
+				</div>
 				<div id = "testContent">
 					<div class = "hero">
 						<h1>IndexedDB</h1>
@@ -258,5 +266,7 @@
 	<script type="text/javascript" src = "tests/10_TransactionReadWriteIsolation.js"></script>
 	<script type="text/javascript" src = "tests/11_IndexKeyObjectCursor.js"></script>
 	<script type="text/javascript" src = "tests/12_CursorContinueAdvance.js"></script>
+	<script type="text/javascript" src = "tests/13_OpenDBVersions.js"></script>
+	<script type="text/javascript" src = "tests/14_TransactionObjectStore.js"></script>
 </body>
 </html>
