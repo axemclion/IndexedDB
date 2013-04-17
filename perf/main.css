@@ -66,3 +66,8 @@
 #idbUnsupported{
 	text-align: center;
 }
+
+#disqusComments{
+	border: none;
+	width: 100%;
+}

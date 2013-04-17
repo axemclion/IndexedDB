@@ -59,32 +59,29 @@
 	<div class="container-fluid">
 		<div class="row-fluid">
 			<div class="span3">
-				<div class = "well sidebar-nav">
+				<div class = "well sidebar-nav"><div class = "affix">
 					<ul class="nav nav-list" id = "perfTestLinks">
 						<script type = "text/html">
 							<% _.each(_.groupBy(perf, 'category'), function(i, name) { %>
 								<li class = 'nav-header'>
-									<%= name %>
-								</li>
+									<%= name %></li>
 								<% _.each(perf, function(val, key){ if (val.category === name){%>
 									<li data-name = "<%= key %>">
 										<a href="#<%=key%>" data-name = "<%=key%>"> <i class="icon-chevron-right pull-right"></i>
-											<%= key %>
-										</a>
+											<%= key %></a>
 									</li>
 								<%}}) %>
-							<% }); %>
-						</script>
-					</ul>
+							<% }); %></script>
+					</ul></div>
 				</div>
 			</div>
 			<div class="span9">
 				<div id = "idbUnsupported" class = "hero alert alert-danger hide">
-					<h2>
-						IndexedDB is not supported in your browser.
-					</h2>
+					<h2>IndexedDB is not supported in your browser.</h2>
 					<p>
-						You could try using the <a href = '//nparashuram.com/IndexedDBShim'>polyfill</a> for IndexedDB API. I have not yet added the polyfill to this performance analysis. 
+						You could try using the
+						<a href = '//nparashuram.com/IndexedDBShim'>polyfill</a>
+						for IndexedDB API. I have not yet added the polyfill to this performance analysis.
 					</p>
 				</div>
 				<div id = "testContent">
@@ -224,9 +221,25 @@
 										<strong>Error!</strong>
 										Could not load results from Browserscope. This could be due to a missing _bTestKey in the test.
 									</div>
-									<div id = "viz">
-									</div>
+									<div id = "viz"></div>
 								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class = "accordian clearfix">
+					<div class = "accordian-group">
+						<div class = "accordion-heading">
+							<h4>
+								<a class="accordion-toggle " data-toggle="collapse" href="#comments">
+									<i class = "icon-cog"></i>
+									Discussion
+								</a>
+							</h4>
+						</div>
+						<div class = "accordion-body" id = "comments">
+							<div class = "accordion-inner">
+								<div id="disqus_thread"></div>
 							</div>
 						</div>
 					</div>

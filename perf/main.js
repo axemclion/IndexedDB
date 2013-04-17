@@ -18,6 +18,30 @@ try {
 
 }
 
+var disqus_shortname = 'indexeddbperformance',
+	disqus_identifier, disqus_title, disqus_url;
+var disqus = (function() {
+	return {
+		loadComments: function(currentPageId) {
+			// http://docs.disqus.com/help/2/
+			window.disqus_shortname = 'indexeddbperformance';
+			window.disqus_identifier = currentPageId;
+			window.disqus_url = 'http://nparashuram.com/IndexedDB/perf/' + currentPageId;
+
+			// http://docs.disqus.com/developers/universal/
+			(function() {
+				var dsq = document.createElement('script');
+				dsq.type = 'text/javascript';
+				dsq.async = true;
+				dsq.src = 'http://indexeddbperformance.disqus.com/embed.js';
+				(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+				dsq.onload = function() {
+					dsq.parentNode.removeChild(dsq)
+				}
+			})();
+		}
+	}
+}());
 
 var browserScope = (function() {
 	var currentTest = null;
@@ -87,7 +111,7 @@ var browserScope = (function() {
 }());
 
 $(document).ready(function() {
-	if (typeof window.indexedDB === 'undefined'){
+	if (typeof window.indexedDB === 'undefined') {
 		$('#idbUnsupported').show();
 	}
 
@@ -118,7 +142,8 @@ $(document).ready(function() {
 		});
 
 		$('.resultsContent').hide();
-		browserScope.loadResults($this.data("name"));
+		browserScope.loadResults($this.data('name'));
+		disqus.loadComments($this.data('name'));
 	});
 
 	$(document).on('click', '.runTestCase', function() {
