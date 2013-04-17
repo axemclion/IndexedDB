@@ -41,16 +41,16 @@
 					var db = req.result;
 					var transaction = db.transaction(['Table1'], 'readonly');
 					var objStore = transaction.objectStore('Table1');
-					//console.log("Database opened");
 					for (var i = 0; i < 1000; i++) {
-						//console.log('Single Transaction - reading ', i)
-						var readReq = objStore.get(i);
-						readReq.onsuccess = readReq.onerror = function() {
-							if (++readCount >= 999) {
-								db.close()
-								deferred.resolve();
+						(function(i) {
+							var readReq = objStore.get(i);
+							readReq.onsuccess = readReq.onerror = function() {
+								if (++readCount >= 999) {
+									db.close()
+									deferred.resolve();
+								}
 							}
-						}
+						}(i));
 					}
 
 				};
@@ -68,14 +68,15 @@
 						var transaction = db.transaction(['Table1'], 'readonly');
 						var objStore = transaction.objectStore('Table1');
 						for (var j = 0; j < 100; j++) {
-							//console.log('Transactions Sets - Reading ', i)
-							var readReq = objStore.get(i);
-							readReq.onsuccess = readReq.onerror = function() {
-								if (++readCount >= 999) {
-									db.close();
-									deferred.resolve();
+							(function(i) {
+								var readReq = objStore.get(i);
+								readReq.onsuccess = readReq.onerror = function() {
+									if (++readCount >= 999) {
+										db.close();
+										deferred.resolve();
+									}
 								}
-							}
+							}(i));
 						}
 
 					}
@@ -91,16 +92,18 @@
 					var db = req.result;
 					//console.log("Database opened");
 					for (var i = 0; i < 1000; i++) {
-						var transaction = db.transaction(['Table1'], 'readonly');
-						var objStore = transaction.objectStore('Table1');
-						//console.log('Multiple transactions - Reading ', i)
-						var readReq = objStore.get(i);
-						readReq.onsuccess = readReq.onerror = function() {
-							if (++readCount >= 999) {
-								db.close();
-								deferred.resolve();
+						(function(i) {
+							var transaction = db.transaction(['Table1'], 'readonly');
+							var objStore = transaction.objectStore('Table1');
+							//console.log('Multiple transactions - Reading ', i)
+							var readReq = objStore.get(i);
+							readReq.onsuccess = readReq.onerror = function() {
+								if (++readCount >= 999) {
+									db.close();
+									deferred.resolve();
+								}
 							}
-						}
+						}(i));
 					}
 				};
 				req.onerror = function() {
