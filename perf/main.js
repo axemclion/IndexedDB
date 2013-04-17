@@ -63,6 +63,7 @@ var browserScope = (function() {
 		},
 		loadResults: function(testName) {
 			$('.browserScope .alert').hide();
+			$('#viz').html('Loading');
 			testName && (currentTest = testName);
 			if (window.IndexedDBPerf.googleLoaded === false) return;
 
