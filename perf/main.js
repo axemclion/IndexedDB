@@ -66,14 +66,13 @@ var browserScope = (function() {
 			$('#viz').html('Loading');
 			testName && (currentTest = testName);
 			if (window.IndexedDBPerf.googleLoaded === false) return;
-
 			if (typeof window.IndexedDBPerf.suites[currentTest] === 'undefined' || typeof window.IndexedDBPerf.suites[currentTest]._bTestKey === 'undefined') {
 				$('#viz').empty();
 				$('.browserScope .loadError').fadeIn();
 				return;
 			}
-
-			$.getJSON('http://www.browserscope.org/user/tests/table/' + window.IndexedDBPerf.suites[currentTest]._bTestKey + '?o=json&callback=?', function(res, status) {
+			$('.browserscopeLink').attr('href', 'http://www.browserscope.org/user/tests/table/' + window.IndexedDBPerf.suites[currentTest]._bTestKey);
+			$.getJSON('http://www.browserscope.org/user/tests/table/' + window.IndexedDBPerf.suites[currentTest]._bTestKey + '?v=0&o=json&callback=?', function(res, status) {
 				if (status !== 'success') {
 					$('.browserScope .loadError').fadeIn();
 					return;
