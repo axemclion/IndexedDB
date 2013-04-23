@@ -1,0 +1,82 @@
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="http://code.jquery.com/qunit/qunit-1.11.0.css"/>
+	<style>
+		iframe {
+			float: right;
+			width: 50%;
+			border: 0; 
+			padding: 0;
+			margin: 0
+		}
+
+		#qunit{
+			float: left;
+			width: 50%;
+			height: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div id="qunit"></div>
+	<div id="qunit-fixture"></div>
+	<iframe src = "index.html"></iframe>
+
+	<script src = "http://code.jquery.com/qunit/qunit-1.11.0.js"></script>
+	<script type="text/javascript" src = "lib/underscore.min.js"></script>
+
+	<script type = "text/javascript">
+		var frame = window.frames[0],
+			i = 0;
+		frame.onload = function() {
+			runSuite(i);
+		}
+
+		function runSuite() {
+			var test = frame.$("#perfTestLinks>li:not(.nav-header)").eq(i).children('a');
+			if (test.length === 0) {
+				return;
+			}
+			asyncTest(test.text().trim(), function() {
+				test.click();
+				frame.$(".runTests:first").click();
+				frame.scrollTo(0, frame.$('.controls:last').offset().top - 100);
+				var timer = window.setInterval(function() {
+					if (frame.IndexedDBPerf.results.running === true) {
+						for (var i = 0; i < frame.IndexedDBPerf.results.length; i++) {
+							frame.IndexedDBPerf.results[i].on('complete', function() {
+								ok(true, this.name + " - Passed");
+							});
+							frame.IndexedDBPerf.results[i].on('error', function() {
+								ok(false, this.name + " - Errored Out");
+							});
+						}
+						window.clearInterval(timer);
+						waitForComplete();
+					}
+				}, 1000);
+			});
+		}
+
+		var attempts = 0;
+
+		function waitForComplete() {
+			window.setTimeout(function() {
+				if (++attempts > 60 * 5) {
+					ok(false, 'Test Timeout - Failed running test', i);
+					start();
+					frame.location.reload();
+				}
+				if (frame.IndexedDBPerf.results.running === true) {
+					waitForComplete();
+				} else {
+					i++;
+					attempts = 0;
+					start();
+					runSuite();
+				}
+			}, 1000);
+		}
+	</script>
+</body>
+</html>
