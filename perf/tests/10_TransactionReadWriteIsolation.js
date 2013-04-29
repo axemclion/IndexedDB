@@ -1,6 +1,6 @@
 (function(s) {
 	s['Read and Write transaction isolation'] = {
-		category :'ObjectStore',
+		category :'Transaction',
 		desc : 'Should read and write operations be in the same transction, or be in different transactions',
 		_bTestKey:'agt1YS1wcm9maWxlcnINCxIEVGVzdBiJ8KIUDA',
 		onStart: function(cb, status) {

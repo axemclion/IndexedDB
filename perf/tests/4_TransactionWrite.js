@@ -1,6 +1,6 @@
 (function(s) {
 	s['Transaction based on Write'] = {
-		category: 'ObjectStore',
+		category: 'Transaction',
 		desc : 'Is it faster to queue all write requests in one transaction, or batch write requests in multiple transactions opening in a loop',
 		_bTestKey: 'agt1YS1wcm9maWxlcnINCxIEVGVzdBjDk6QUDA',
 		onStart: function(cb, status) {
