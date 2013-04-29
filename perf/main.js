@@ -89,7 +89,7 @@ var browserScope = (function() {
 					}
 					if (o.count > 0) {
 						data.addRow([key].concat(_.map(o.results, function(x) {
-							return parseInt(x.result/1000);
+							return parseFloat(x.result/1000);
 						})));
 					}
 				});
